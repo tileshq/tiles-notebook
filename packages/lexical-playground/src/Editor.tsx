@@ -15,7 +15,6 @@ import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import {HashtagPlugin} from '@lexical/react/LexicalHashtagPlugin';
-import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {HorizontalRulePlugin} from '@lexical/react/LexicalHorizontalRulePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PlainTextPlugin} from '@lexical/react/LexicalPlainTextPlugin';
@@ -24,7 +23,7 @@ import {SelectionAlwaysOnDisplay} from '@lexical/react/LexicalSelectionAlwaysOnD
 import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
 import {useLexicalEditable} from '@lexical/react/useLexicalEditable';
-import * as React from 'react';
+//import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {CAN_USE_DOM} from 'shared/canUseDOM';
 
@@ -183,9 +182,7 @@ export default function Editor(): JSX.Element {
                 providerFactory={createWebsocketProvider}
                 shouldBootstrap={!skipCollaborationInit}
               />
-            ) : (
-              <HistoryPlugin externalHistoryState={historyState} />
-            )}
+            ) : null}
             <RichTextPlugin
               contentEditable={
                 <div className="editor-scroller">
@@ -250,7 +247,6 @@ export default function Editor(): JSX.Element {
               contentEditable={<ContentEditable placeholder={placeholder} />}
               ErrorBoundary={LexicalErrorBoundary}
             />
-            <HistoryPlugin externalHistoryState={historyState} />
           </>
         )}
         {(isCharLimit || isCharLimitUtf8) && (
@@ -268,7 +264,7 @@ export default function Editor(): JSX.Element {
           shouldPreserveNewLinesInMarkdown={shouldPreserveNewLinesInMarkdown}
         />
       </div>
-      {showTreeView && <TreeViewPlugin />}
+      { showTreeView && <TreeViewPlugin />}
     </>
   );
 }

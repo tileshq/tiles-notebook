@@ -46,6 +46,42 @@ export default defineConfig(({command}) => {
     define: {
       'process.env.IS_PREACT': process.env.IS_PREACT,
     },
+    server: {
+      proxy: {
+        '/api/proxy': {
+          target: 'https://www.mcp.run',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/proxy/, '/api'),
+          configure: (proxy, options) => {
+            // Log proxy events for debugging
+            proxy.on('error', (err, req, res) => {
+              console.log('proxy error', err);
+            });
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('Sending Request to the Target:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, res) => {
+              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+            });
+          },
+        },
+        '/api/servlets': {
+          target: 'https://www.mcp.run',
+          changeOrigin: true,
+          configure: (proxy, options) => {
+            proxy.on('error', (err, req, res) => {
+              console.log('servlets proxy error', err);
+            });
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('Sending Servlets Request:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, res) => {
+              console.log('Received Servlets Response:', proxyRes.statusCode, req.url);
+            });
+          },
+        },
+      },
+    },
     plugins: [
       replaceCodePlugin({
         replacements: [

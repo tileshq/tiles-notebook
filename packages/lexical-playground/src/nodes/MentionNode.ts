@@ -46,7 +46,7 @@ export class MentionNode extends TextNode {
   __mention: string;
 
   static getType(): string {
-    return 'mention';
+    return 'mcpserver';
   }
 
   static clone(node: MentionNode): MentionNode {
