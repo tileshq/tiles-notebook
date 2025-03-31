@@ -235,6 +235,29 @@ function App(): JSX.Element {
           </ToolbarContext>
         </TableContext>
       </SharedHistoryContext>
+      <footer
+        style={{
+          borderTop: '1px solid #eee',
+          color: '#666',
+          fontSize: '14px',
+          marginTop: '20px',
+          padding: '20px',
+          textAlign: 'center',
+        }}>
+        <p>A new kind of notebook for making personal software.</p>
+        <p>Early Access Q2 2025.</p>
+        <p>
+          Check out{' '}
+          <a
+            href="https://tilekit.dev"
+            target="_blank"
+            rel="noreferrer"
+            style={{color: '#007bff', textDecoration: 'none'}}>
+            Tilekit
+          </a>{' '}
+          for the underlying personal software framework.
+        </p>
+      </footer>
     </LexicalComposer>
   );
 }
