@@ -1,0 +1,21 @@
+{
+  "name": "Tiles",
+  "short_name": "Tiles",
+  "description": "A new kind of notebook for making personal software",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff0000",
+  "icons": [
+    {
+      "src": "/assets/icon.png",
+      "sizes": "120x120",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+} 

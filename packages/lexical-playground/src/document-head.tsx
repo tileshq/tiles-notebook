@@ -11,7 +11,7 @@ import {useEffect} from 'react';
 export default function DocumentHead(): null {
   useEffect(() => {
     // Set document title
-    document.title = 'Tiles Playground';
+    document.title = 'Tiles';
 
     // Set favicon
     const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement;
