@@ -10,6 +10,7 @@ import {$createLinkNode} from '@lexical/link';
 import {$createListItemNode, $createListNode} from '@lexical/list';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
 import {$createHeadingNode, $createQuoteNode} from '@lexical/rich-text';
+import {Analytics} from '@vercel/analytics/react';
 import {
   $createParagraphNode,
   $createTextNode,
@@ -215,7 +216,11 @@ function App(): JSX.Element {
             <DocumentHead />
             <header>
               <a href="https://tiles.run" target="_blank" rel="noreferrer">
-                <img src={logo} alt="Lexical Logo" style={{ width: '32px', height: 'auto' }} />
+                <img
+                  src={logo}
+                  alt="Lexical Logo"
+                  style={{height: 'auto', width: '32px'}}
+                />
               </a>
             </header>
             <div className="editor-shell">
@@ -236,11 +241,13 @@ function App(): JSX.Element {
 
 export default function PlaygroundApp(): JSX.Element {
   return (
-    <SettingsContext>
-      <FlashMessageContext>
-        <App />
-      </FlashMessageContext>
-
-    </SettingsContext>
+    <>
+      <SettingsContext>
+        <FlashMessageContext>
+          <App />
+        </FlashMessageContext>
+      </SettingsContext>
+      <Analytics />
+    </>
   );
 }

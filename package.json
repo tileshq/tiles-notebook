@@ -191,6 +191,7 @@
     "vite": "^5.2.11"
   },
   "dependencies": {
-    "yjs": "^13.5.42"
+    "yjs": "^13.5.42",
+    "@vercel/analytics": "^1.1.2"
   }
 }
