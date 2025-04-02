@@ -16,11 +16,11 @@ export default function DocumentHead(): null {
     // Set favicon
     const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement;
     if (favicon) {
-      favicon.href = '/images/favicon.ico';
+      favicon.href = '/favicon.ico';
     } else {
       const newFavicon = document.createElement('link');
       newFavicon.rel = 'icon';
-      newFavicon.href = '/images/favicon.ico';
+      newFavicon.href = '/favicon.ico';
       document.head.appendChild(newFavicon);
     }
   }, []);
