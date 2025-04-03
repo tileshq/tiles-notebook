@@ -1,0 +1,27 @@
+import { Analytics } from '@vercel/analytics/react';
+import type { Metadata } from 'next';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: 'Tiles Playground',
+  description: 'A new kind of notebook for making personal software',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Analytics />
+      </body>
+    </html>
+  );
+}

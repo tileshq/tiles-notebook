@@ -1,0 +1,255 @@
+@import 'https://fonts.googleapis.com/css?family=Reenie+Beanie';
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 238, 238, 238;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: rgb(var(--background-rgb));
+  padding: 0 20px;
+  color: rgb(var(--foreground-rgb));
+}
+
+header {
+  max-width: 580px;
+  margin: auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+header a {
+  max-width: 220px;
+  margin: 20px 0 0 0;
+  display: block;
+}
+
+header img {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+header h1 {
+  text-align: left;
+  color: #333;
+  display: inline-block;
+  margin: 20px 0 0 0;
+}
+
+.editor-shell {
+  margin: 20px auto;
+  border-radius: 2px;
+  max-width: 1100px;
+  color: #000;
+  position: relative;
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.editor-shell .editor-container {
+  background: #fff;
+  position: relative;
+  display: block;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.editor-shell .editor-container.tree-view {
+  border-radius: 0;
+}
+
+.editor-shell .editor-container.plain-text {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.editor-scroller {
+  min-height: 150px;
+  max-width: 100%;
+  border: 0;
+  display: flex;
+  position: relative;
+  outline: 0;
+  z-index: 0;
+  resize: vertical;
+}
+
+.editor {
+  flex: auto;
+  max-width: 100%;
+  position: relative;
+  resize: vertical;
+  z-index: -1;
+}
+
+.test-recorder-output {
+  margin: 20px auto 20px auto;
+  width: 100%;
+}
+
+pre {
+  line-height: 1.1;
+  background: #222;
+  color: #fff;
+  margin: 0;
+  padding: 10px;
+  font-size: 12px;
+  overflow: auto;
+  max-height: 400px;
+}
+
+.tree-view-output {
+  display: block;
+  background: #222;
+  color: #fff;
+  padding: 0;
+  font-size: 12px;
+  margin: 1px auto 10px auto;
+  position: relative;
+  overflow: hidden;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+pre::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+
+pre::-webkit-scrollbar-thumb {
+  background: #999;
+}
+
+.editor-dev-button {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 40px;
+  font-size: 12px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.3);
+  background-color: #444;
+}
+
+.editor-dev-button::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  display: block;
+  background-size: contain;
+  filter: invert(1);
+}
+
+.editor-dev-button:hover {
+  background-color: #555;
+}
+
+.editor-dev-button.active {
+  background-color: rgb(233, 35, 35);
+}
+
+#options-button {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+}
+
+.toolbar {
+  display: flex;
+  margin-bottom: 1px;
+  background: #fff;
+  padding: 4px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  vertical-align: middle;
+  overflow: auto;
+  height: 36px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+button.toolbar-item {
+  border: 0;
+  display: flex;
+  background: none;
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+}
+
+button.toolbar-item:disabled {
+  cursor: not-allowed;
+}
+
+button.toolbar-item.spaced {
+  margin-right: 2px;
+}
+
+button.toolbar-item i.format {
+  background-size: contain;
+  display: inline-block;
+  height: 18px;
+  width: 18px;
+  vertical-align: -0.25em;
+  display: flex;
+  opacity: 0.6;
+}
+
+button.toolbar-item:disabled .icon,
+button.toolbar-item:disabled .text,
+button.toolbar-item:disabled i.format,
+button.toolbar-item:disabled .chevron-down {
+  opacity: 0.2;
+}
+
+button.toolbar-item.active {
+  background-color: rgba(223, 232, 250, 0.3);
+}
+
+button.toolbar-item.active i {
+  opacity: 1;
+}
+
+.toolbar-item:hover:not([disabled]) {
+  background-color: #eee;
+}
+
+.ContentEditable__root {
+  flex: 1;
+  position: relative;
+  outline: 0;
+  white-space: pre-wrap;
+  z-index: 0;
+}
+
+.ContentEditable__placeholder {
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}

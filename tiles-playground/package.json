@@ -1,0 +1,51 @@
+{
+  "name": "tiles-playground",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@excalidraw/excalidraw": "^0.17.0",
+    "@lexical/clipboard": "0.22.0",
+    "@lexical/code": "0.22.0",
+    "@lexical/file": "0.22.0",
+    "@lexical/hashtag": "0.22.0",
+    "@lexical/link": "0.22.0",
+    "@lexical/list": "0.22.0",
+    "@lexical/mark": "0.22.0",
+    "@lexical/overflow": "0.22.0",
+    "@lexical/plain-text": "0.22.0",
+    "@lexical/react": "0.22.0",
+    "@lexical/rich-text": "0.22.0",
+    "@lexical/selection": "0.22.0",
+    "@lexical/table": "0.22.0",
+    "@lexical/utils": "0.22.0",
+    "@vercel/analytics": "^1.1.2",
+    "katex": "^0.16.10",
+    "lexical": "0.22.0",
+    "lodash-es": "^4.17.21",
+    "next": "^14.2.26",
+    "node-fetch": "^2.7.0",
+    "prettier": "^3.4.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-error-boundary": "^3.1.4",
+    "y-websocket": "^1.5.4",
+    "yjs": ">=13.5.42"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-flow-strip-types": "^7.24.7",
+    "@babel/preset-react": "^7.24.7",
+    "@types/lodash-es": "^4.14.182",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.1.0",
+    "typescript": "^5.4.5"
+  }
+}
