@@ -16,13 +16,13 @@ export default function DocumentHead(): null {
     // Set favicon
     const favicon = document.querySelector("link[rel='icon']") as HTMLLinkElement;
     if (favicon) {
-      favicon.href = '/src/images/logo.svg';
+      favicon.href = '/images/logo.svg';
       favicon.type = 'image/svg+xml';
     } else {
       const newFavicon = document.createElement('link');
       newFavicon.rel = 'icon';
       newFavicon.type = 'image/svg+xml';
-      newFavicon.href = '/src/images/logo.svg';
+      newFavicon.href = '/images/logo.svg';
       document.head.appendChild(newFavicon);
     }
   }, []);
