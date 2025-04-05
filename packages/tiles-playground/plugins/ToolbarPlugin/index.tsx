@@ -93,6 +93,7 @@ import {
   formatParagraph,
   formatQuote,
 } from './utils';
+import McpRunnerPlugin from '../McpRunnerPlugin';
 
 const rootTypeToRootName = {
   root: 'Root',
@@ -1179,6 +1180,8 @@ export default function ToolbarPlugin({
         editor={activeEditor}
         isRTL={toolbarState.isRTL}
       />
+
+      <McpRunnerPlugin />
 
       {modal}
     </div>
