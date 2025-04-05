@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Define the MCP Servlet interface
@@ -5,6 +7,23 @@ export interface McpServlet {
   slug: string;
   name?: string;
   description?: string;
+  meta?: {
+    lastContentAddress?: string;
+    schema?: {
+      tools?: Array<{
+        name: string;
+        description: string;
+        inputSchema: {
+          type: string;
+          properties: Record<string, any>;
+          required?: string[];
+        };
+      }>;
+    };
+  };
+  binding?: {
+    contentAddress?: string;
+  };
   // Add other relevant fields if needed
 }
 
@@ -14,6 +33,7 @@ interface McpContextType {
   isLoading: boolean;
   error: string | null;
   refreshServlets: () => Promise<void>;
+  fetchWasmContent: (contentAddress: string) => Promise<ArrayBuffer>;
 }
 
 // Create the context with default values
@@ -22,6 +42,7 @@ const McpContext = createContext<McpContextType>({
   isLoading: false,
   error: null,
   refreshServlets: async () => {},
+  fetchWasmContent: async () => new ArrayBuffer(0),
 });
 
 // Module-level cache for servlets
@@ -75,6 +96,21 @@ async function fetchServlets(): Promise<McpServlet[]> {
   return servletFetchPromise;
 }
 
+// Function to fetch WASM content
+async function fetchWasmContent(contentAddress: string): Promise<ArrayBuffer> {
+  try {
+    const response = await fetch(`/api/wasm/${contentAddress}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch WASM content: ${response.statusText} (Status: ${response.status})`);
+    }
+    
+    return await response.arrayBuffer();
+  } catch (err) {
+    console.error("Error fetching WASM content:", err);
+    throw err;
+  }
+}
+
 // Provider component
 export const McpProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [servlets, setServlets] = useState<McpServlet[]>([]);
@@ -101,7 +137,13 @@ export const McpProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   return (
-    <McpContext.Provider value={{ servlets, isLoading, error, refreshServlets }}>
+    <McpContext.Provider value={{ 
+      servlets, 
+      isLoading, 
+      error, 
+      refreshServlets,
+      fetchWasmContent
+    }}>
       {children}
     </McpContext.Provider>
   );

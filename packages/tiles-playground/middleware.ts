@@ -58,6 +58,28 @@ export async function middleware(request: NextRequest) {
         headers: response.headers,
       });
     }
+
+    // Handle /api/wasm/:contentAddress requests
+    if (request.nextUrl.pathname.startsWith('/api/wasm/')) {
+      const contentAddress = request.nextUrl.pathname.replace('/api/wasm/', '');
+      const url = new URL(`/api/c/${contentAddress}`, targetUrl);
+      
+      // Forward the request to the target server
+      const response = await fetch(url, {
+        method: request.method,
+        headers: {
+          ...Object.fromEntries(request.headers),
+          'host': 'www.mcp.run',
+        },
+      });
+
+      // Return the response from the target server
+      return new NextResponse(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      });
+    }
   } catch (error) {
     console.error('Proxy error:', error);
     return new NextResponse(JSON.stringify({ error: 'Proxy request failed' }), {
@@ -73,5 +95,5 @@ export async function middleware(request: NextRequest) {
 
 // Configure which paths the middleware should run on
 export const config = {
-  matcher: ['/api/proxy/:path*', '/api/servlets/:path*'],
+  matcher: ['/api/proxy/:path*', '/api/servlets/:path*', '/api/wasm/:path*'],
 }; 

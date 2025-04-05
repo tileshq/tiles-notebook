@@ -60,6 +60,7 @@ import ListMaxIndentLevelPlugin from '@/plugins/ListMaxIndentLevelPlugin';
 import MarkdownShortcutPlugin from '@/plugins/MarkdownShortcutPlugin';
 import {MaxLengthPlugin} from '@/plugins/MaxLengthPlugin';
 import MentionsPlugin from '@/plugins/MentionsPlugin';
+import McpRunnerPlugin from '@/plugins/McpRunnerPlugin';
 import PageBreakPlugin from '@/plugins/PageBreakPlugin';
 import PollPlugin from '@/plugins/PollPlugin';
 import ShortcutsPlugin from '@/plugins/ShortcutsPlugin';
@@ -171,6 +172,7 @@ export default function Editor(): JSX.Element {
         <EmojiPickerPlugin />
         <AutoEmbedPlugin />
         <MentionsPlugin />
+        <McpRunnerPlugin />
         <EmojisPlugin />
         <HashtagPlugin />
         <KeywordsPlugin />
