@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR, LexicalCommand } from 'lexical';
 import { useMcpContext } from '@/contexts/McpContext';
 import { CSSProperties } from 'react';
+import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions } from '../../../wasm-runner/lib/wasm-executor';
 
 // Define a custom command for running MCP
 export const RUN_MCP_COMMAND: LexicalCommand<void> = {
@@ -43,6 +44,24 @@ export default function McpRunnerPlugin(): JSX.Element {
   const [wasmContent, setWasmContent] = useState<ArrayBuffer | null>(null);
   const [wasmError, setWasmError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [executionResult, setExecutionResult] = useState<WasmExecutorResult | null>(null);
+  
+  // Static configuration options for WasmExecutor
+  const wasmExecutorOptions: WasmExecutorOptions = {
+    useWasi: true,
+    config: { 
+      arguments: {
+        code: "2 + 2"  // Required: JavaScript code to evaluate
+      }
+    },
+    //allowedHosts: ['*', '127.0.0.1'],
+    allowedPaths: {
+      '/tmp': '/tmp',
+      '/data': '/data'
+    },
+    logLevel: 'debug',
+    runInWorker: true // Set to true if you want to run in a worker thread
+  };
   
   // Create a ref to store the latest servlets data
   const servletsRef = useRef(servlets);
@@ -56,6 +75,7 @@ export default function McpRunnerPlugin(): JSX.Element {
   // Function to process the current selection
   const processCurrentSelection = () => {
     setIsProcessing(true);
+    setExecutionResult(null);
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
       // Get the current line's nodes
@@ -100,17 +120,46 @@ export default function McpRunnerPlugin(): JSX.Element {
                     console.log('WASM content fetched successfully, size:', wasmBuffer.byteLength);
                     setWasmContent(wasmBuffer);
                     
-                    // Here you can initialize the WASM module
-                    // For example:
-                    // WebAssembly.instantiate(wasmBuffer, importObject)
-                    //   .then(result => {
-                    //     // Use the WASM module
-                    //     console.log('WASM module instantiated:', result);
-                    //   })
-                    //   .catch(err => {
-                    //     console.error('Failed to instantiate WASM module:', err);
-                    //     setWasmError(err.message);
-                    //   });
+                    // Initialize and execute the WASM module using WasmExecutor with options
+                    createWasmExecutorFromBuffer(wasmBuffer, wasmExecutorOptions)
+                      .then(async executor => {
+                        // Wait for the executor to be fully initialized
+                        // The plugin property is initialized asynchronously
+                        console.log('Executor created, waiting for initialization...');
+                        
+                        // Add a small delay to allow initialization to complete
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        
+                        // Execute the main function with input
+                        const inputParams = {
+                          params: {
+                            name: matchingServlet.name || matchingServlet.slug,
+                            arguments: {
+                              code: "print(45 + 32)"  // JavaScript code to evaluate
+                            }
+                          }
+                        };
+
+                        console.log('Executing with input:', JSON.stringify(inputParams));
+                        
+                        // Use the correct function name from the servlet metadata if available
+                        const functionName = matchingServlet.meta?.schema?.tools?.[0]?.name || 'call';
+                        console.log(`Using function name: ${functionName}`);
+                        
+                        return executor.execute('call', JSON.stringify(inputParams));
+                      })
+                      .then(result => {
+                        console.log('WASM execution result:', result);
+                        setExecutionResult(result);
+                        
+                        if (result.error) {
+                          setWasmError(result.error);
+                        }
+                      })
+                      .catch(err => {
+                        console.error('Failed to execute WASM module:', err);
+                        setWasmError(err.message);
+                      });
                   })
                   .catch(err => {
                     console.error('Failed to fetch WASM content:', err);
@@ -167,14 +216,30 @@ export default function McpRunnerPlugin(): JSX.Element {
 
   // This component will be rendered in the toolbar
   return (
-    <button 
-      onClick={handleRunMcp}
-      disabled={isProcessing}
-      style={isProcessing ? {...styles.button, ...styles.buttonDisabled} : styles.button}
-      title="Run MCP (Ctrl+Enter)"
-      className="toolbar-item"
-    >
-      🤖
-    </button>
+    <div>
+      <button 
+        onClick={handleRunMcp}
+        disabled={isProcessing}
+        style={isProcessing ? {...styles.button, ...styles.buttonDisabled} : styles.button}
+        title="Run MCP (Ctrl+Enter)"
+        className="toolbar-item"
+      >
+        🤖
+      </button>
+      {executionResult && (
+        <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+          <h4>Execution Result:</h4>
+          <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {executionResult.output}
+          </pre>
+          {executionResult.error && (
+            <div style={{ color: 'red', marginTop: '5px' }}>
+              <strong>Error:</strong> {executionResult.error}
+            </div>
+          )}
+        </div>
+      )}
+      {wasmError && <div style={styles.error}>{wasmError}</div>}
+    </div>
   );
 } 
