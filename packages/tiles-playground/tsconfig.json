@@ -26,6 +26,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "wasm-runner/*": [
+        "../wasm-runner/*"
       ]
     },
     "strictNullChecks": true

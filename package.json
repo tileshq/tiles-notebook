@@ -8,7 +8,7 @@
   "description": "Tiles monorepo workspace",
   "scripts": {
     "dev": "npm run dev --workspace=tiles-playground",
-    "build": "npm run build --workspace=tiles-playground",
+    "build": "npm run build --workspace=wasm-runner && npm run build --workspace=tiles-playground",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
