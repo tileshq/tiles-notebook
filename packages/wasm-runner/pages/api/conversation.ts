@@ -1,6 +1,6 @@
 import { Anthropic } from '@anthropic-ai/sdk';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createWasmExecutorFromBuffer, WasmExecutorOptions } from '../../lib/wasm-executor';
+import { createWasmExecutorFromBuffer, WasmExecutorOptions } from 'lib/wasm-executor';
 
 // Use global fetch instead of node-fetch
 const fetch = global.fetch;
@@ -201,7 +201,7 @@ For each tool call, structure your response to:
     do {
       // Send the current state of the conversation to Claude
       response = await anthropic.messages.create({
-        model: 'claude-3-5-haiku-latest',
+        model: 'claude-3-haiku-20240307',
         max_tokens: 4096,
         temperature: 0.7,
         system: systemMessage,

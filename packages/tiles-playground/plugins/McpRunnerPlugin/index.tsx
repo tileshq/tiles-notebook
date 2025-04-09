@@ -6,7 +6,7 @@ import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR,
 import { $createHorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useMcpContext } from '@/contexts/McpContext';
 import { CSSProperties } from 'react';
-import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions } from '../../../wasm-runner/lib/wasm-executor';
+import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions } from 'wasm-runner/lib/wasm-executor';
 
 // Define a custom command for running MCP
 export const RUN_MCP_COMMAND: LexicalCommand<void> = {
