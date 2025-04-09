@@ -13,5 +13,11 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
-} 
+  "license": "ISC",
+  "devDependencies": {
+    "confusing-browser-globals": "^1.0.11",
+    "eslint-config-fbjs": "^4.0.0",
+    "eslint-plugin-lexical": "^0.0.1-security",
+    "eslint-plugin-react-hooks": "^5.2.0"
+  }
+}

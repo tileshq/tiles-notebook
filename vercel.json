@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "cd packages/tiles-playground && npm run build",
+  "installCommand": "cd packages/tiles-playground && npm install",
+  "outputDirectory": "packages/tiles-playground/.next",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD packages/tiles-playground/",
+  "framework": "nextjs"
+}

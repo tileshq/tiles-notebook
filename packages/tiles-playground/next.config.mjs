@@ -22,25 +22,12 @@ const nextConfig = {
       fs: false,
       path: false,
     };
-    
-    // Include wasm-runner package in transpilation
-    config.module.rules.push({
-      test: /\.(ts|tsx)$/,
-      include: [/node_modules\/wasm-runner/, /\.\.\/\.\.\/wasm-runner/],
-      use: [
-        {
-          loader: 'babel-loader',
-          options: {
-            presets: ['next/babel'],
-          },
-        },
-      ],
-    });
-    
+        
     return config;
   },
-  // Transpile the wasm-runner package
+  // Transpile modules from the monorepo
   transpilePackages: ['wasm-runner'],
+  distDir: '.next',
 };
 
 export default nextConfig;
