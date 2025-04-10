@@ -4,7 +4,7 @@ import './globals.css';
 import { McpProvider } from '../contexts/McpContext';
 
 export const metadata: Metadata = {
-  title: 'Tiles Playground',
+  title: 'Tiles: A new kind of notebook for making personal software',
   description: 'A new kind of notebook for making personal software',
   icons: {
     icon: [
