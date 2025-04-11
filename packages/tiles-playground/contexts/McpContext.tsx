@@ -9,6 +9,7 @@ export interface McpServlet {
   description?: string;
   meta?: {
     lastContentAddress?: string;
+    description?: string;
     schema?: {
       tools?: Array<{
         name: string;
