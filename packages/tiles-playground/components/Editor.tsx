@@ -109,7 +109,7 @@ export default function Editor(): JSX.Element {
   const placeholder = isCollab
     ? 'Enter some collaborative rich text...'
     : isRichText
-    ? 'Enter some rich text...'
+    ? 'Enter some rich text. Use @ to call MCP servers.'
     : 'Enter some plain text...';
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
