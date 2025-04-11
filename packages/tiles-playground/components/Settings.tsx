@@ -69,6 +69,11 @@ export default function Settings(): JSX.Element {
         className={`editor-dev-button ${showSettings ? 'active' : ''}`}
         onClick={() => setShowSettings(!showSettings)}
       />
+      <button
+        id="toc-button"
+        className={`editor-dev-button ${showTableOfContents ? 'active' : ''}`}
+        onClick={() => setOption('showTableOfContents', !showTableOfContents)}
+      />
       {showSettings ? (
         <div className="switches">
           {isRichText && isDevPlayground && (

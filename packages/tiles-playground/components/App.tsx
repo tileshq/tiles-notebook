@@ -21,9 +21,9 @@ import {ToolbarContext} from '@/context/ToolbarContext';
 import DocumentHead from '@/components/DocumentHead';
 import Editor from '@/components/Editor';
 import PlaygroundNodes from '@/nodes/PlaygroundNodes';
-import DocsPlugin from '@/plugins/DocsPlugin';
-import PasteLogPlugin from '@/plugins/PasteLogPlugin';
-import TestRecorderPlugin from '@/plugins/TestRecorderPlugin';
+//import DocsPlugin from '@/plugins/DocsPlugin';
+//import PasteLogPlugin from '@/plugins/PasteLogPlugin';
+//import TestRecorderPlugin from '@/plugins/TestRecorderPlugin';
 import {parseAllowedFontSize} from '@/plugins/ToolbarPlugin/fontSize';
 import TypingPerfPlugin from '@/plugins/TypingPerfPlugin';
 import Settings from '@/components/Settings';
@@ -214,9 +214,9 @@ function App(): JSX.Element {
               <Editor />
             </div>
             <Settings />
-            {isDevPlayground ? <DocsPlugin /> : null}
-            {isDevPlayground ? <PasteLogPlugin /> : null}
-            {isDevPlayground ? <TestRecorderPlugin /> : null}
+            {/*isDevPlayground ? <DocsPlugin /> : null */}
+            {/*isDevPlayground ? <PasteLogPlugin /> : null*/}
+            {/*isDevPlayground ? <TestRecorderPlugin /> : null*/}
 
             {measureTypingPerf ? <TypingPerfPlugin /> : null}
           </ToolbarContext>
@@ -232,11 +232,9 @@ function App(): JSX.Element {
           textAlign: 'center',
         }}>
         <p>A new kind of notebook for making personal software.</p>
+        <p>Early Access Q2 2025.</p>
         <p>
-        Technically it's a local-first, multiplayer enabled MCP client with notebook interface.
-        </p>
-        <p>
-        Check out{' '}
+          Check out{' '}
           <a
             href="https://tilekit.dev"
             target="_blank"

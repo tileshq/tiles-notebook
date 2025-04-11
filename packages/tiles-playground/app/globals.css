@@ -163,8 +163,8 @@ pre::-webkit-scrollbar-thumb {
 
 #options-button {
   position: fixed;
-  left: 20px;
-  bottom: 20px;
+  right: 20px;
+  top: 20px;
 }
 
 .toolbar {
