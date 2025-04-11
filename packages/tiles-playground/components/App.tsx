@@ -232,7 +232,7 @@ function App(): JSX.Element {
           textAlign: 'center',
         }}>
         <p>A new kind of notebook for making personal software.</p>
-        <p>Early Access Q2 2025.</p>
+        <p>Technically it's a local-first, multiplayer enabled MCP client with notebook interface.</p>
         <p>
           Check out{' '}
           <a
