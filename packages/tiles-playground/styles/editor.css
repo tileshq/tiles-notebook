@@ -1784,3 +1784,25 @@
    width: 100%;
  }
  
+ /* Add a new rule for the share button */
+ .action-button.share {
+   position: fixed;
+   right: 83px; /* Position it to the left of the options button */
+   top: 20px;
+   z-index: 10;
+   background-color: #ffffff; /* Dark background like options button */
+   color: white; /* White text for contrast */
+   box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.3); /* Same shadow as options button */
+   width: 40px; /* Same width as options button */
+   height: 40px; /* Same height as options button */
+   border-radius: 20px; /* Same border radius as options button */
+   padding: 0; /* Remove padding */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+ }
+ 
+ .action-button.share:hover {
+   background-color: #555; /* Same hover effect as options button */
+ }
+ 

@@ -196,7 +196,7 @@ export default function ActionsPlugin({
 
   return (
     <div className="actions">
-      <button
+      {/*<button
         className="action-button import"
         onClick={() => importFile(editor)}
         title="Import"
@@ -215,7 +215,7 @@ export default function ActionsPlugin({
         title="Export"
         aria-label="Export editor state to JSON">
         <i className="export" />
-      </button>
+      </button> */}
       <button
         className="action-button share"
         disabled={isCollabActive || INITIAL_SETTINGS.isCollab}
@@ -233,7 +233,7 @@ export default function ActionsPlugin({
         aria-label="Share Playground link to current editor state">
         <i className="share" />
       </button>
-      <button
+     {/* <button
         className="action-button clear"
         disabled={isEditorEmpty}
         onClick={() => {
@@ -280,8 +280,8 @@ export default function ActionsPlugin({
           <i className={connected ? 'disconnect' : 'connect'} />
         </button>
       )}
-      {modal}
-    </div>
+      {modal}*/}
+    </div> 
   );
 }
 
