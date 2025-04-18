@@ -76,6 +76,7 @@ import TwitterPlugin from '@/plugins/TwitterPlugin';
 import YouTubePlugin from '@/plugins/YouTubePlugin';
 import ContentEditable from '@/ui/ContentEditable';
 import '../styles/editor.css';
+import {IndexedDBStoragePlugin} from '@/plugins/IndexedDBStoragePlugin';
 
 // Handle window access safely with Next.js
 const skipCollaborationInit = typeof window !== 'undefined' ? 
@@ -268,6 +269,7 @@ export default function Editor(): JSX.Element {
           isRichText={isRichText}
           shouldPreserveNewLinesInMarkdown={shouldPreserveNewLinesInMarkdown}
         />
+        <IndexedDBStoragePlugin documentId="main-editor" autoSaveInterval={1000} />
       </div>
       { showTreeView && <TreeViewPlugin />}
     </>

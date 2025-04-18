@@ -110,7 +110,7 @@ export default function McpRunnerPlugin(): JSX.Element {
   // Update the ref whenever servlets changes
   useEffect(() => {
     servletsRef.current = servlets;
-    console.log('Servlets updated in ref:', servlets);
+    //console.log('Servlets updated in ref:', servlets);
   }, [servlets]);
 
   // Insert text nodes after the current node
