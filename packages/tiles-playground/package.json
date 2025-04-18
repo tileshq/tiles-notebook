@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run copy-sqlite-wasm",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "copy-sqlite-wasm": "mkdir -p public/sqlite-wasm && cp -r ../../node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/*.wasm public/sqlite-wasm/"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.17.0",
@@ -24,7 +26,9 @@
     "@lexical/selection": "0.22.0",
     "@lexical/table": "0.22.0",
     "@lexical/utils": "0.22.0",
+    "@sqlite.org/sqlite-wasm": "^3.49.1-build4",
     "@vercel/analytics": "^1.1.2",
+    "extism": "^2.0.0-rc11",
     "katex": "^0.16.10",
     "lexical": "0.22.0",
     "lodash-es": "^4.17.21",
@@ -34,7 +38,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^3.1.4",
-    "extism": "^2.0.0-rc11",
     "y-websocket": "^1.5.4",
     "yjs": ">=13.5.42"
   },
