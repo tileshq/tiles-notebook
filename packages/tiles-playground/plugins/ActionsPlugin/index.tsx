@@ -219,18 +219,45 @@ export default function ActionsPlugin({
       <button
         className="action-button share"
         disabled={isCollabActive || INITIAL_SETTINGS.isCollab}
-        onClick={() =>
-          shareDoc(
-            serializedDocumentFromEditorState(editor.getEditorState(), {
-              source: 'Playground',
-            }),
-          ).then(
-            () => showFlashMessage('URL copied to clipboard'),
-            () => showFlashMessage('URL could not be copied to clipboard'),
-          )
-        }
+        onClick={async () => {
+          try {
+            // Create document if it doesn't exist
+            const editorStateJSON = JSON.stringify(editor.getEditorState());
+            const createResponse = await fetch('/api/documents', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                content: editorStateJSON,
+              }),
+            });
+
+            if (!createResponse.ok) {
+              throw new Error('Failed to create document');
+            }
+
+            const doc = await createResponse.json();
+
+            // Create share link
+            const shareResponse = await fetch(`/api/documents/${doc.id}/share`, {
+              method: 'POST',
+            });
+
+            if (!shareResponse.ok) {
+              throw new Error('Failed to create share link');
+            }
+
+            const { shareUrl } = await shareResponse.json();
+            await navigator.clipboard.writeText(shareUrl);
+            showFlashMessage('Share URL copied to clipboard');
+          } catch (error) {
+            console.error('Error sharing document:', error);
+            showFlashMessage('Failed to create share link');
+          }
+        }}
         title="Share"
-        aria-label="Share Playground link to current editor state">
+        aria-label="Share document link">
         <i className="share" />
       </button>
      {/* <button

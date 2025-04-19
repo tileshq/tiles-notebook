@@ -1806,3 +1806,83 @@
    background-color: #555; /* Same hover effect as options button */
  }
  
+ .editor-container.read-only {
+   border: none;
+   box-shadow: none;
+ }
+ 
+ .editor-container.read-only .editor {
+   cursor: default;
+   background: transparent;
+ }
+ 
+ .editor-container.read-only .editor:focus {
+   outline: none;
+ }
+ 
+ .editor-container.shared-view {
+   border: none;
+   background: #fafafa;
+ }
+ 
+ .editor-container.shared-view .editor {
+   background: transparent;
+ }
+ 
+ /* Removing the dashed border at the top */
+ .editor-container.shared-view::before {
+   display: none;
+ }
+ 
+ .shared-toolbar {
+   background-color: transparent;
+   border-bottom: none;
+   padding: 8px 16px;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 16px;
+   border-radius: 4px;
+ }
+ 
+ .shared-toolbar .toolbar-section {
+   display: flex;
+   align-items: center;
+   gap: 16px;
+ }
+ 
+ .shared-toolbar .toolbar-item {
+   display: flex;
+   align-items: center;
+ }
+ 
+ .shared-toolbar .toolbar-label {
+   font-weight: 600;
+   color: #495057;
+ }
+ 
+ .shared-toolbar .toolbar-button {
+   background-color: #e9ecef;
+   border: none;
+   border-radius: 4px;
+   padding: 6px 12px;
+   font-size: 14px;
+   cursor: pointer;
+   transition: background-color 0.2s;
+ }
+ 
+ .shared-toolbar .toolbar-button:hover {
+   background-color: #dee2e6;
+ }
+ 
+ .shared-view .editor {
+   background-color: #fff;
+   border: none;
+   border-radius: 4px;
+   padding: 16px;
+ }
+ 
+ .shared-view .editor-scroller {
+   min-height: 300px;
+ }
+ 

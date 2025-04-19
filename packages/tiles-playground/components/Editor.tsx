@@ -77,6 +77,7 @@ import YouTubePlugin from '@/plugins/YouTubePlugin';
 import ContentEditable from '@/ui/ContentEditable';
 import '../styles/editor.css';
 import {IndexedDBStoragePlugin} from '@/plugins/IndexedDBStoragePlugin';
+import {StoragePlugin} from '@/plugins/StoragePlugin';
 
 // Handle window access safely with Next.js
 const skipCollaborationInit = typeof window !== 'undefined' ? 
@@ -84,7 +85,19 @@ const skipCollaborationInit = typeof window !== 'undefined' ?
   window.parent != null && window.parent.frames.right === window : 
   false;
 
-export default function Editor(): JSX.Element {
+interface EditorProps {
+  documentId?: string;
+  initialContent?: any;
+  readOnly?: boolean;
+  isSharedView?: boolean;
+}
+
+export default function Editor({
+  documentId = 'main-editor',
+  initialContent,
+  readOnly = false,
+  isSharedView = false,
+}: EditorProps): JSX.Element {
   const {historyState} = useSharedHistoryContext();
   const {
     settings: {
@@ -106,8 +119,10 @@ export default function Editor(): JSX.Element {
       selectionAlwaysOnDisplay,
     },
   } = useSettings();
-  const isEditable = useLexicalEditable();
-  const placeholder = isCollab
+  const [isEditable, setIsEditable] = useState(!readOnly);
+  const placeholder = isSharedView 
+    ? 'You can edit this document, but changes won\'t be saved...'
+    : isCollab
     ? 'Enter some collaborative rich text...'
     : isRichText
     ? 'Enter some rich text. Use @ to call MCP servers.'
@@ -119,6 +134,18 @@ export default function Editor(): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const [activeEditor, setActiveEditor] = useState(editor);
   const [isLinkEditMode, setIsLinkEditMode] = useState<boolean>(false);
+
+  // Set initial editor state if provided
+  useEffect(() => {
+    if (initialContent) {
+      editor.setEditorState(editor.parseEditorState(initialContent));
+    }
+  }, [editor, initialContent]);
+
+  // Set read-only mode
+  useEffect(() => {
+    editor.setEditable(!readOnly);
+  }, [editor, readOnly]);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
     if (_floatingAnchorElem !== null) {
@@ -145,7 +172,7 @@ export default function Editor(): JSX.Element {
 
   return (
     <>
-      {isRichText && (
+      {isRichText && !readOnly && !isSharedView && (
         <ToolbarPlugin
           editor={editor}
           activeEditor={activeEditor}
@@ -153,7 +180,7 @@ export default function Editor(): JSX.Element {
           setIsLinkEditMode={setIsLinkEditMode}
         />
       )}
-      {isRichText && (
+      {isRichText && !readOnly && !isSharedView && (
         <ShortcutsPlugin
           editor={activeEditor}
           setIsLinkEditMode={setIsLinkEditMode}
@@ -162,7 +189,7 @@ export default function Editor(): JSX.Element {
       <div
         className={`editor-container ${showTreeView ? 'tree-view' : ''} ${
           !isRichText ? 'plain-text' : ''
-        }`}>
+        } ${readOnly ? 'read-only' : ''} ${isSharedView ? 'shared-view' : ''}`}>
         {isMaxLength && <MaxLengthPlugin maxLength={30} />}
         <DragDropPaste />
         <AutoFocusPlugin />
@@ -265,13 +292,17 @@ export default function Editor(): JSX.Element {
         <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
         {shouldUseLexicalContextMenu && <ContextMenuPlugin />}
         {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
-        <ActionsPlugin
-          isRichText={isRichText}
-          shouldPreserveNewLinesInMarkdown={shouldPreserveNewLinesInMarkdown}
-        />
-        <IndexedDBStoragePlugin documentId="main-editor" autoSaveInterval={1000} />
+        {!isSharedView && (
+          <ActionsPlugin
+            isRichText={isRichText}
+            shouldPreserveNewLinesInMarkdown={shouldPreserveNewLinesInMarkdown}
+          />
+        )}
+        {!isSharedView && (
+          <StoragePlugin documentId={documentId} autoSaveInterval={1000} />
+        )}
       </div>
-      { showTreeView && <TreeViewPlugin />}
+      {showTreeView && !readOnly && !isSharedView && <TreeViewPlugin />}
     </>
   );
 }
