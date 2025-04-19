@@ -202,6 +202,29 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
         {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
       </div>
       {showTreeView && <TreeViewPlugin />}
+      <footer
+        style={{
+          borderTop: '1px solid #eee',
+          color: '#666',
+          fontSize: '14px',
+          marginTop: '20px',
+          padding: '20px',
+          textAlign: 'center',
+        }}>
+        <p>A new kind of notebook for making personal software.</p>
+        <p>Technically it's a local-first, multiplayer enabled MCP client with notebook interface.</p>
+        <p>
+          Check out{' '}
+          <a
+            href="https://tilekit.dev"
+            target="_blank"
+            rel="noreferrer"
+            style={{color: '#007bff', textDecoration: 'none'}}>
+            Tilekit
+          </a>{' '}
+          for the underlying personal software framework.
+        </p>
+      </footer>
     </>
   );
 }
