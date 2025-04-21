@@ -22,6 +22,8 @@ import { CAN_USE_DOM } from '@/shared/canUseDOM';
 import ContentEditable from '@/ui/ContentEditable';
 import { useSettings } from '@/context/SettingsContext';
 import { useSharedHistoryContext } from '@/context/SharedHistoryContext';
+import useFlashMessage from '@/hooks/useFlashMessage';
+import { FlashMessageContext } from '@/context/FlashMessageContext';
 import AutoEmbedPlugin from '@/plugins/AutoEmbedPlugin';
 import AutoLinkPlugin from '@/plugins/AutoLinkPlugin';
 import CodeHighlightPlugin from '@/plugins/CodeHighlightPlugin';
@@ -49,6 +51,8 @@ interface SharedEditorProps {
 }
 
 function SharedToolbar() {
+  const showFlashMessage = useFlashMessage();
+  
   return (
     <div className="toolbar shared-toolbar">
       <div className="toolbar-item" style={{ flex: 1 }}>
@@ -66,7 +70,7 @@ function SharedToolbar() {
           onClick={() => {
             // Copy the current URL to clipboard
             navigator.clipboard.writeText(window.location.href);
-            //alert('Link copied to clipboard!');
+            showFlashMessage('Share URL copied to clipboard');
           }}
         >
           Share
@@ -240,12 +244,14 @@ export default function SharedEditor(props: SharedEditorProps) {
   };
 
   return (
-    <LexicalComposer initialConfig={initialConfig}>
-      <TableContext>
-        <ToolbarContext>
-          <SharedEditorContent {...props} />
-        </ToolbarContext>
-      </TableContext>
-    </LexicalComposer>
+    <FlashMessageContext>
+      <LexicalComposer initialConfig={initialConfig}>
+        <TableContext>
+          <ToolbarContext>
+            <SharedEditorContent {...props} />
+          </ToolbarContext>
+        </TableContext>
+      </LexicalComposer>
+    </FlashMessageContext>
   );
 } 
