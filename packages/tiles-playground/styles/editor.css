@@ -986,6 +986,7 @@
    display: inline-block;
    position: relative;
    user-select: none;
+   z-index: 1;
  }
  
  .editor-shell .editor-image img {
@@ -1076,6 +1077,7 @@
    position: absolute;
    background-color: rgb(60, 132, 244);
    border: 1px solid #fff;
+   z-index: 2;
  }
  
  .editor-shell .editor-image .image-resizer.image-resizer-n {

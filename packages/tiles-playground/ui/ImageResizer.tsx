@@ -254,7 +254,7 @@ export default function ImageResizer({
     }
   };
   return (
-    <div ref={controlWrapperRef}>
+    <div ref={controlWrapperRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none' }}>
       {!showCaption && captionsEnabled && (
         <button
           className="image-caption-button"
@@ -270,48 +270,56 @@ export default function ImageResizer({
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.north);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-ne"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.north | Direction.east);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-e"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.east);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-se"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.south | Direction.east);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-s"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.south);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-sw"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.south | Direction.west);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-w"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.west);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
       <div
         className="image-resizer image-resizer-nw"
         onPointerDown={(event) => {
           handlePointerDown(event, Direction.north | Direction.west);
         }}
+        style={{ pointerEvents: 'auto' }}
       />
     </div>
   );

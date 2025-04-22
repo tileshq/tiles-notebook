@@ -406,7 +406,7 @@ export default function ImageComponent({
   return (
     <Suspense fallback={null}>
       <>
-        <div draggable={draggable}>
+        <div draggable={draggable} style={{ position: 'relative' }}>
           {isLoadError ? (
             <BrokenImage />
           ) : (

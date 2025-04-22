@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -5,8 +7,13 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
+
+import type {JSX} from 'react';
+
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+
 import {$wrapNodeInElement, mergeRegister} from '@lexical/utils';
+
 import {
   $createParagraphNode,
   $createRangeSelection,
@@ -27,24 +34,24 @@ import {
   LexicalCommand,
   LexicalEditor,
 } from 'lexical';
+
 import {useEffect, useRef, useState} from 'react';
+
 import * as React from 'react';
 
-import landscapeImage from '../../images/landscape.jpg';
-import yellowFlowerImage from '../../images/yellow-flower.jpg';
-
-// Import the ImagesPlugin
-import ImagesPlugin from './ImagesPlugin';
-
-/*import {
+import {
   $createImageNode,
   $isImageNode,
   ImageNode,
   ImagePayload,
 } from '../../nodes/ImageNode';
+
 import Button from '../../ui/Button';
+
 import {DialogActions, DialogButtonsList} from '../../ui/Dialog';
+
 import FileInput from '../../ui/FileInput';
+
 import TextInput from '../../ui/TextInput';
 
 export type InsertImagePayload = Readonly<ImagePayload>;
@@ -59,7 +66,6 @@ export function InsertImageUriDialogBody({
 }) {
   const [src, setSrc] = useState('');
   const [altText, setAltText] = useState('');
-
   const isDisabled = src === '';
 
   return (
@@ -97,7 +103,6 @@ export function InsertImageUploadedDialogBody({
 }) {
   const [src, setSrc] = useState('');
   const [altText, setAltText] = useState('');
-
   const isDisabled = src === '';
 
   const loadImage = (files: FileList | null) => {
@@ -171,24 +176,6 @@ export function InsertImageDialog({
       {!mode && (
         <DialogButtonsList>
           <Button
-            data-test-id="image-modal-option-sample"
-            onClick={() =>
-              onClick(
-                hasModifier.current
-                  ? {
-                      altText:
-                        'Daylight fir trees forest glacier green high ice landscape',
-                      src: landscapeImage,
-                    }
-                  : {
-                      altText: 'Yellow flower in tilt shift lens',
-                      src: yellowFlowerImage,
-                    },
-              )
-            }>
-            Sample
-          </Button>
-          <Button
             data-test-id="image-modal-option-url"
             onClick={() => setMode('url')}>
             URL
@@ -261,8 +248,13 @@ export default function ImagesPlugin({
 
 const TRANSPARENT_IMAGE =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-const img = document.createElement('img');
-img.src = TRANSPARENT_IMAGE;
+
+// Create a function to get the drag image
+function getDragImage(): HTMLImageElement {
+  const img = document.createElement('img');
+  img.src = TRANSPARENT_IMAGE;
+  return img;
+}
 
 function $onDragStart(event: DragEvent): boolean {
   const node = $getImageNodeInSelection();
@@ -273,6 +265,10 @@ function $onDragStart(event: DragEvent): boolean {
   if (!dataTransfer) {
     return false;
   }
+  
+  // Create the image only when needed
+  const img = getDragImage();
+  
   dataTransfer.setData('text/plain', '_');
   dataTransfer.setDragImage(img, 0, 0);
   dataTransfer.setData(
@@ -291,7 +287,6 @@ function $onDragStart(event: DragEvent): boolean {
       type: 'image',
     }),
   );
-
   return true;
 }
 
@@ -389,4 +384,4 @@ function getDragSelection(event: DragEvent): Range | null | undefined {
   }
 
   return range;
-}*/
+} 

@@ -51,7 +51,7 @@ import EquationsPlugin from '@/plugins/EquationsPlugin';
 import FigmaPlugin from '@/plugins/FigmaPlugin';
 import FloatingLinkEditorPlugin from '@/plugins/FloatingLinkEditorPlugin';
 import FloatingTextFormatToolbarPlugin from '@/plugins/FloatingTextFormatToolbarPlugin';
-//import ImagesPlugin from '@/plugins/ImagesPlugin';
+import ImagesPlugin from '@/plugins/ImagesPlugin';
 //import InlineImagePlugin from '@/plugins/InlineImagePlugin';
 import KeywordsPlugin from '@/plugins/KeywordsPlugin';
 import {LayoutPlugin} from '@/plugins/LayoutPlugin/LayoutPlugin';
@@ -237,7 +237,7 @@ export default function Editor({
               hasHorizontalScroll={tableHorizontalScroll}
             />
             {/*<TableCellResizer />*/}
-            {/*<ImagesPlugin />*/}
+            <ImagesPlugin />
             {/*<InlineImagePlugin />*/}
             <LinkPlugin hasLinkAttributes={hasLinkAttributes} />
             <PollPlugin />
