@@ -344,7 +344,10 @@ export default function NewMentionsPlugin(): JSX.Element | null {
     document.body.appendChild(button);
 
     return () => {
-      document.body.removeChild(button);
+      const buttonToRemove = document.getElementById('servlets-button');
+      if (buttonToRemove && buttonToRemove.parentNode) {
+        buttonToRemove.parentNode.removeChild(buttonToRemove);
+      }
     };
   }, [toggleServlets]);
 

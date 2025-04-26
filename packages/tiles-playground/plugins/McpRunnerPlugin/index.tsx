@@ -2,11 +2,12 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useEffect, useRef, useState } from 'react';
-import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR, LexicalCommand, $createTextNode, $createParagraphNode, TextNode } from 'lexical';
+import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR, LexicalCommand, $createTextNode, $createParagraphNode, TextNode, $insertNodes } from 'lexical';
 import { $createHorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useMcpContext } from '@/contexts/McpContext';
 import { CSSProperties } from 'react';
 import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions } from '../../lib/wasm-executor';
+import { $createArtifactNode, $isArtifactNode, ArtifactContentType } from '../../nodes/ArtifactNode';
 
 // Define a custom command for running MCP
 export const RUN_MCP_COMMAND: LexicalCommand<void> = {
@@ -15,7 +16,7 @@ export const RUN_MCP_COMMAND: LexicalCommand<void> = {
 
 // Types for conversation
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: any;
   type?: string;
 }
@@ -58,6 +59,24 @@ interface ToolUseSubmessage {
   name: string;
   input: any;
 }
+
+// --- Define Artifact Structure ---
+interface ArtifactStructure {
+    type: 'artifact';
+    contentType: ArtifactContentType;
+    content: string;
+    metadata?: Record<string, any>; // Optional metadata
+}
+
+// Helper to check if an object is a valid artifact
+function isValidArtifact(obj: any): obj is ArtifactStructure {
+    return obj &&
+           obj.type === 'artifact' &&
+           typeof obj.contentType === 'string' &&
+           typeof obj.content === 'string' &&
+           ['application/vnd.ant.html', 'text/markdown', 'application/vnd.ant.mermaid'].includes(obj.contentType);
+}
+// --- End Artifact Structure Definition ---
 
 // Styles for the plugin
 const styles: Record<string, CSSProperties> = {
@@ -121,13 +140,32 @@ export default function McpRunnerPlugin(): JSX.Element {
       const indentedText = '  ' + text;
       const textNode = $createTextNode(indentedText);
       paragraph.append(textNode);
-      targetNode.getParentOrThrow().insertAfter(paragraph);
-      
+
+      const targetParent = targetNode.getParentOrThrow();
+      targetParent.insertAfter(paragraph);
+
       // Add horizontal rule after the text
       const horizontalRule = $createHorizontalRuleNode();
       paragraph.insertAfter(horizontalRule);
     });
   };
+
+  // --- Insert Artifact Node ---
+  const insertArtifactAfterNode = (targetNode: TextNode, artifact: ArtifactStructure) => {
+      editor.update(() => {
+          const artifactNode = $createArtifactNode(artifact.contentType, artifact.content);
+          const paragraph = $createParagraphNode(); // Wrap artifact in a paragraph for block behavior
+          paragraph.append(artifactNode);
+
+          const targetParent = targetNode.getParentOrThrow();
+          targetParent.insertAfter(paragraph); // Insert the paragraph containing the artifact
+
+          // Optionally add a horizontal rule after the artifact paragraph
+          const horizontalRule = $createHorizontalRuleNode();
+          paragraph.insertAfter(horizontalRule);
+      });
+  };
+  // --- End Insert Artifact Node ---
 
   // Make request to the Next.js API
   const callClaudeApi = async (messages: Message[], tools: any[]) => {
@@ -155,7 +193,7 @@ export default function McpRunnerPlugin(): JSX.Element {
       }
 
       const responseText = await response.text();
-      console.log('Raw Claude API response:', responseText);
+      //console.log('Raw Claude API response:', responseText);
       try {
         return JSON.parse(responseText);
       } catch (parseError) {
@@ -210,7 +248,7 @@ export default function McpRunnerPlugin(): JSX.Element {
     }
     
     if (!mcpServerNode) {
-      console.log('No mcpserver node found');
+      //console.log('No mcpserver node found');
       setWasmError('No mcpserver node found');
       setIsProcessing(false);
       return;
@@ -218,17 +256,17 @@ export default function McpRunnerPlugin(): JSX.Element {
     
     userPrompt = userPrompt.trim();
     if (!userPrompt) {
-      console.log('No user prompt found after mcpserver node');
+      //console.log('No user prompt found after mcpserver node');
       setWasmError('Please add your prompt after the mcpserver tag');
       setIsProcessing(false);
       return;
     }
 
-    console.log('Found mcpserver node:', {
-      text: mcpServerNode.getTextContent(),
-      key: mcpServerNode.getKey(),
-      userPrompt
-    });
+    //console.log('Found mcpserver node:', {
+    //  text: mcpServerNode.getTextContent(),
+    //  key: mcpServerNode.getKey(),
+    //  userPrompt
+    //});
 
     // Use the ref to access the latest servlets data
     const currentServlets = servletsRef.current;
@@ -238,20 +276,20 @@ export default function McpRunnerPlugin(): JSX.Element {
     const matchingServlet = currentServlets.find((servlet) => servlet.slug === servletSlug);
 
     if (!matchingServlet) {
-      console.log(`Servlet with slug "${servletSlug}" not found in context.`);
+      //console.log(`Servlet with slug "${servletSlug}" not found in context.`);
       setWasmError(`Servlet with slug "${servletSlug}" not found`);
       setIsProcessing(false);
       return;
     }
     
-    console.log('Matching servlet found:', matchingServlet);
+    //console.log('Matching servlet found:', matchingServlet);
 
     // Get content address from either meta.lastContentAddress or binding.contentAddress
     const contentAddress = matchingServlet.meta?.lastContentAddress || 
                           matchingServlet.binding?.contentAddress;
     
     if (!contentAddress) {
-      console.log('No content address found for servlet');
+      //console.log('No content address found for servlet');
       setWasmError('No content address found for servlet');
       setIsProcessing(false);
       return;
@@ -301,10 +339,38 @@ export default function McpRunnerPlugin(): JSX.Element {
         }
       }];
       
+      // --- Artifact System Prompt ---
+      // Prepare a system message to instruct Claude about artifact formats
+      const artifactSystemMessage: Message = {
+        role: 'system',
+        content: `When generating visual content such as diagrams, charts, HTML, or formatted content, please respond with a JSON object that follows this structure:
+{
+  "type": "artifact",
+  "contentType": "application/vnd.ant.html" | "text/markdown" | "application/vnd.ant.mermaid",
+  "content": "your content here"
+}
+
+For contentType:
+- Use "application/vnd.ant.html" for HTML content
+- Use "text/markdown" for Markdown formatted text
+- Use "application/vnd.ant.mermaid" for Mermaid diagram syntax
+
+Example for Mermaid:
+{
+  "type": "artifact",
+  "contentType": "application/vnd.ant.mermaid",
+  "content": "graph TD;\\n    A-->B;\\n    A-->C;\\n    B-->D;\\n    C-->D;"
+}
+
+Make sure to properly escape any special characters in the content string. Return this JSON object as a complete message without any additional explanation or wrapping.`
+      };
+
       // Start the conversation with the initial message
       let messages: Message[] = [
+        artifactSystemMessage, // Add the system message about artifacts first
         { role: 'user', content: userPrompt }
       ];
+      // --- End Artifact System Prompt ---
       
       // Keep track of conversation history for display
       let conversationHistory: Message[] = [{
@@ -321,8 +387,9 @@ export default function McpRunnerPlugin(): JSX.Element {
       do {
         // Send the current state of the conversation to Claude via API
         try {
-          console.log('Sending messages to Claude:', messages, claudeTools);
-
+          //console.log('Sending messages to Claude:', messages, claudeTools);
+          
+          // Call Claude API with messages that include our system prompt
           response = await callClaudeApi(messages, claudeTools);
         } catch (error) {
           console.error('Error calling Claude API:', error);
@@ -342,17 +409,48 @@ export default function McpRunnerPlugin(): JSX.Element {
           content: response.content,
         });
         
-        // Display Claude's response if it's not a tool use
-        let claudeTextResponse = '';
+        // --- Process and Display Claude's Response ---
+        let claudeNonArtifactResponse = '';
+
+        // First check if the entire response is an artifact
+        try {
+          const responseText = response.content
+            .filter((part: any) => part.type === 'text')
+            .map((part: any) => part.text)
+            .join('')
+            .trim();
+
+          if (responseText.startsWith('{') && responseText.includes('"type": "artifact"')) {
+            const parsed = JSON.parse(responseText);
+            if (isValidArtifact(parsed)) {
+              insertArtifactAfterNode(mcpServerNode, parsed);
+              continue; // Skip to next iteration since this was a pure artifact response
+            }
+          }
+        } catch (e) {
+          // Not a valid artifact JSON, continue with normal processing
+          console.warn('Response was not a valid artifact:', e);
+        }
+
+        // Process each part of the response
         for (const part of response.content) {
           if (part.type === 'text') {
-            claudeTextResponse += part.text;
+            claudeNonArtifactResponse += part.text;
+          } else if (part.type === 'tool_use') {
+            // Handle tool use as before (potentially insert pending text first)
+            if (claudeNonArtifactResponse) {
+              insertTextAfterNode(mcpServerNode, `Claude: ${claudeNonArtifactResponse}`);
+              claudeNonArtifactResponse = ''; // Reset accumulator
+            }
+            // Tool use handling continues below...
           }
         }
-        
-        if (claudeTextResponse) {
-          insertTextAfterNode(mcpServerNode, `Claude: ${claudeTextResponse}`);
+
+        // Insert any remaining non-artifact text at the end
+        if (claudeNonArtifactResponse) {
+          insertTextAfterNode(mcpServerNode, `Claude: ${claudeNonArtifactResponse}`);
         }
+        // --- End Process and Display Claude's Response ---
         
         // Check if there are any tool use requests
         const newMessage: Message = { role: 'user', content: [] };
@@ -378,7 +476,7 @@ export default function McpRunnerPlugin(): JSX.Element {
               }
             });
             
-            console.log(`Executing tool ${name} with input:`, servletInput);
+            //console.log(`Executing tool ${name} with input:`, servletInput);
             
             // Execute the servlet using the plugin
             const executionResult = await executor.execute('call', servletInput);
@@ -472,7 +570,7 @@ export default function McpRunnerPlugin(): JSX.Element {
         
       } while (true);
       
-      console.log(`Conversation complete.`);
+      //console.log(`Conversation complete.`);
       
       // Clean up the executor
       if (executor) {
