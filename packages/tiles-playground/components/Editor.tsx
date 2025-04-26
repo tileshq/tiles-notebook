@@ -17,6 +17,7 @@ import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {LexicalErrorBoundary} from '@lexical/react/LexicalErrorBoundary';
 import {HashtagPlugin} from '@lexical/react/LexicalHashtagPlugin';
+import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {HorizontalRulePlugin} from '@lexical/react/LexicalHorizontalRulePlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PlainTextPlugin} from '@lexical/react/LexicalPlainTextPlugin';
@@ -226,6 +227,7 @@ export default function Editor({
               }
               ErrorBoundary={LexicalErrorBoundary}
             />
+            <HistoryPlugin />
             <MarkdownShortcutPlugin />
             <CodeHighlightPlugin />
             <ListPlugin />
