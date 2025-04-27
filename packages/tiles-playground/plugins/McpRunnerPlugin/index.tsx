@@ -70,13 +70,134 @@ interface ArtifactStructure {
 
 // Helper to check if an object is a valid artifact
 function isValidArtifact(obj: any): obj is ArtifactStructure {
-    return obj &&
+    // console.log('Validating artifact:', obj);
+    const isValid = obj &&
            obj.type === 'artifact' &&
            typeof obj.contentType === 'string' &&
            typeof obj.content === 'string' &&
            ['application/vnd.ant.html', 'text/markdown', 'application/vnd.ant.mermaid'].includes(obj.contentType);
+    
+    // console.log('Artifact validation result:', isValid);
+    if (!isValid) {
+      // console.log('Validation failed because:');
+      if (!obj) // console.log('- Object is null or undefined');
+      if (obj && obj.type !== 'artifact') // console.log('- Type is not "artifact"');
+      if (obj && typeof obj.contentType !== 'string') // console.log('- contentType is not a string');
+      if (obj && typeof obj.content !== 'string') // console.log('- content is not a string');
+      if (obj && typeof obj.contentType === 'string' && 
+          !['application/vnd.ant.html', 'text/markdown', 'application/vnd.ant.mermaid'].includes(obj.contentType)) {
+        // console.log('- contentType is not one of the allowed types');
+      }
+    }
+    
+    return isValid;
 }
-// --- End Artifact Structure Definition ---
+
+// Function to extract and parse artifact JSON from text
+function extractArtifactFromText(text: string): ArtifactStructure | null {
+  try {
+    // First try to parse the entire text as JSON
+    try {
+      const parsed = JSON.parse(text);
+      if (isValidArtifact(parsed)) {
+        return parsed;
+      }
+    } catch (e) {
+      // Not valid JSON, continue with extraction
+    }
+    
+    // Try to extract JSON using regex
+    const artifactMatch = text.match(/\{[\s\S]*"type":\s*"artifact"[\s\S]*\}/);
+    if (artifactMatch) {
+      const artifactJson = artifactMatch[0];
+      // console.log('Extracted artifact JSON from text:', artifactJson.substring(0, 100) + '...');
+      
+      try {
+        const parsed = JSON.parse(artifactJson);
+        if (isValidArtifact(parsed)) {
+          return parsed;
+        }
+      } catch (parseError) {
+        // console.error('Error parsing extracted artifact JSON:', parseError);
+        
+        // If parsing failed, try to manually extract the content
+        if (artifactJson.includes('"contentType":') && artifactJson.includes('"content":')) {
+          try {
+            // Extract contentType
+            const contentTypeMatch = artifactJson.match(/"contentType":\s*"([^"]+)"/);
+            const contentType = contentTypeMatch ? contentTypeMatch[1] : null;
+            
+            // Extract content - this is tricky because content might contain quotes and newlines
+            // Find the start of the content
+            const contentStartIndex = artifactJson.indexOf('"content":') + 10;
+            if (contentStartIndex > 10) {
+              // Find the first quote after the content start
+              const firstQuoteIndex = artifactJson.indexOf('"', contentStartIndex);
+              if (firstQuoteIndex > contentStartIndex) {
+                // Find the matching end quote (this is tricky with nested quotes)
+                let endQuoteIndex = -1;
+                let inEscape = false;
+                
+                for (let i = firstQuoteIndex + 1; i < artifactJson.length; i++) {
+                  if (artifactJson[i] === '\\' && !inEscape) {
+                    inEscape = true;
+                  } else if (artifactJson[i] === '"' && !inEscape) {
+                    endQuoteIndex = i;
+                    break;
+                  } else {
+                    inEscape = false;
+                  }
+                }
+                
+                if (endQuoteIndex > firstQuoteIndex) {
+                  const content = artifactJson.substring(firstQuoteIndex + 1, endQuoteIndex);
+                  
+                  // Create a valid artifact object
+                  if (contentType && ['application/vnd.ant.html', 'text/markdown', 'application/vnd.ant.mermaid'].includes(contentType)) {
+                    return {
+                      type: 'artifact',
+                      contentType: contentType as ArtifactContentType,
+                      content: content
+                    };
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            // console.error('Error manually extracting artifact content:', e);
+          }
+        }
+      }
+    }
+    
+    // If we couldn't extract using the above methods, try a more direct approach
+    // Look for HTML content directly in the text
+    if (text.includes('<html') || text.includes('<!DOCTYPE html')) {
+      // console.log('Found HTML content directly in text');
+      
+      // Extract the HTML content
+      const htmlMatch = text.match(/<html[\s\S]*<\/html>/i) || 
+                        text.match(/<!DOCTYPE html[\s\S]*<\/html>/i) ||
+                        text.match(/<body[\s\S]*<\/body>/i);
+      
+      if (htmlMatch) {
+        const htmlContent = htmlMatch[0];
+        // console.log('Extracted HTML content:', htmlContent.substring(0, 100) + '...');
+        
+        return {
+          type: 'artifact',
+          contentType: 'application/vnd.ant.html',
+          content: htmlContent
+        };
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    // console.error('Error extracting artifact from text:', e);
+    return null;
+  }
+}
 
 // Styles for the plugin
 const styles: Record<string, CSSProperties> = {
@@ -152,6 +273,14 @@ export default function McpRunnerPlugin(): JSX.Element {
 
   // --- Insert Artifact Node ---
   const insertArtifactAfterNode = (targetNode: TextNode, artifact: ArtifactStructure) => {
+      // console.log('Inserting artifact:', artifact);
+      // console.log('Artifact content type:', artifact.contentType);
+      // console.log('Artifact content length:', artifact.content.length);
+      
+      if (artifact.contentType === 'application/vnd.ant.html') {
+        // console.log('HTML content preview:', artifact.content.substring(0, 100) + '...');
+      }
+      
       editor.update(() => {
           const artifactNode = $createArtifactNode(artifact.contentType, artifact.content);
           const paragraph = $createParagraphNode(); // Wrap artifact in a paragraph for block behavior
@@ -183,7 +312,7 @@ export default function McpRunnerPlugin(): JSX.Element {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Claude API error response:', errorText);
+        // console.error('Claude API error response:', errorText);
         try {
           const errorData = JSON.parse(errorText);
           throw new Error(errorData.error || 'Failed to connect to Claude API');
@@ -197,11 +326,11 @@ export default function McpRunnerPlugin(): JSX.Element {
       try {
         return JSON.parse(responseText);
       } catch (parseError) {
-        console.error('Failed to parse Claude API response:', parseError);
+        // console.error('Failed to parse Claude API response:', parseError);
         throw new Error(`Invalid JSON response from Claude API: ${responseText}`);
       }
     } catch (error) {
-      console.error('Error calling Claude API:', error);
+      // console.error('Error calling Claude API:', error);
       throw error;
     }
   };
@@ -362,6 +491,13 @@ Example for Mermaid:
   "content": "graph TD;\\n    A-->B;\\n    A-->C;\\n    B-->D;\\n    C-->D;"
 }
 
+Example for HTML:
+{
+  "type": "artifact",
+  "contentType": "application/vnd.ant.html",
+  "content": "<div style=\"font-family: Arial, sans-serif; padding: 20px;\">\n  <h1 style=\"color: #333;\">Hello World</h1>\n  <p>This is an example of HTML content.</p>\n  <p>This paragraph demonstrates proper HTML structure for line breaks.</p>\n  <ul>\n    <li>Item 1</li>\n    <li>Item 2</li>\n  </ul>\n  <p>For explicit line breaks, use <br> tags like this:<br>This is on a new line</p>\n</div>"
+}
+
 Make sure to properly escape any special characters in the content string. Return this JSON object as a complete message without any additional explanation or wrapping.`
       };
 
@@ -391,8 +527,13 @@ Make sure to properly escape any special characters in the content string. Retur
           
           // Call Claude API with messages that include our system prompt
           response = await callClaudeApi(messages, claudeTools);
+          // console.log('Claude API response structure:', {
+          //   role: response.role,
+          //   contentLength: response.content.length,
+          //   stopReason: response.stop_reason
+          // });
         } catch (error) {
-          console.error('Error calling Claude API:', error);
+          // console.error('Error calling Claude API:', error);
           setWasmError(`Error calling Claude API: ${error instanceof Error ? error.message : String(error)}`);
           insertTextAfterNode(mcpServerNode, `Error calling Claude API: ${error instanceof Error ? error.message : String(error)}`);
           break;
@@ -420,16 +561,28 @@ Make sure to properly escape any special characters in the content string. Retur
             .join('')
             .trim();
 
-          if (responseText.startsWith('{') && responseText.includes('"type": "artifact"')) {
-            const parsed = JSON.parse(responseText);
-            if (isValidArtifact(parsed)) {
-              insertArtifactAfterNode(mcpServerNode, parsed);
+          // console.log('Response text for artifact check:', responseText.substring(0, 100) + '...');
+          
+          if (responseText.includes('"type": "artifact"')) {
+            // console.log('Found potential artifact in response');
+            
+            // Try to extract and parse the artifact
+            const artifact = extractArtifactFromText(responseText);
+            if (artifact) {
+              // console.log('Successfully extracted artifact:', {
+              //   type: artifact.type,
+              //   contentType: artifact.contentType,
+              //   contentLength: artifact.content.length
+              // });
+              
+              // Insert the artifact node
+              insertArtifactAfterNode(mcpServerNode, artifact);
               continue; // Skip to next iteration since this was a pure artifact response
             }
           }
         } catch (e) {
           // Not a valid artifact JSON, continue with normal processing
-          console.warn('Response was not a valid artifact:', e);
+          // console.warn('Response was not a valid artifact:', e);
         }
 
         // Process each part of the response
@@ -448,7 +601,33 @@ Make sure to properly escape any special characters in the content string. Retur
 
         // Insert any remaining non-artifact text at the end
         if (claudeNonArtifactResponse) {
-          insertTextAfterNode(mcpServerNode, `Claude: ${claudeNonArtifactResponse}`);
+          // Check if the non-artifact text contains an artifact JSON
+          if (claudeNonArtifactResponse.includes('"type": "artifact"')) {
+            // Try to extract and parse the artifact
+            const artifact = extractArtifactFromText(claudeNonArtifactResponse);
+            if (artifact) {
+              // console.log('Successfully extracted artifact from text:', {
+              //   type: artifact.type,
+              //   contentType: artifact.contentType,
+              //   contentLength: artifact.content.length
+              // });
+              
+              // Insert the artifact node
+              insertArtifactAfterNode(mcpServerNode, artifact);
+              
+              // Remove the artifact JSON from the text to display
+              // This is approximate since we don't know the exact position
+              claudeNonArtifactResponse = claudeNonArtifactResponse.replace(
+                /\{[\s\S]*"type":\s*"artifact"[\s\S]*\}/, 
+                ''
+              );
+            }
+          }
+          
+          // Only insert the text if it's not empty after processing
+          if (claudeNonArtifactResponse.trim()) {
+            insertTextAfterNode(mcpServerNode, `Claude: ${claudeNonArtifactResponse}`);
+          }
         }
         // --- End Process and Display Claude's Response ---
         
@@ -525,7 +704,7 @@ Make sure to properly escape any special characters in the content string. Retur
               }]
             });
           } catch (error) {
-            console.error(`Error executing tool ${name}:`, error);
+            // console.error(`Error executing tool ${name}:`, error);
             
             const errorMessage = error instanceof Error ? error.message : String(error);
             
@@ -581,7 +760,7 @@ Make sure to properly escape any special characters in the content string. Retur
       insertTextAfterNode(mcpServerNode, "✅ Processing complete");
       
     } catch (err) {
-      console.error('Error in agentic loop:', err);
+      // console.error('Error in agentic loop:', err);
       setWasmError(err instanceof Error ? err.message : String(err));
       insertTextAfterNode(mcpServerNode, `Error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
