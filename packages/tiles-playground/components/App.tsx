@@ -233,6 +233,14 @@ function App(): JSX.Element {
         }}>
         <p>A new kind of notebook for making personal software.</p>
         <p>Technically it's a local-first, multiplayer enabled MCP client with notebook interface.</p>
+        <p>View <a
+          href="https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-"
+          target="_blank"
+          rel="noreferrer"
+          style={{color: '#007bff', textDecoration: 'none'}}
+        >
+          Live Changelog
+        </a>.</p>
         <p>
           Check out{' '}
           <a
