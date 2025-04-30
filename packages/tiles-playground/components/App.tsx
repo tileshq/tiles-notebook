@@ -241,17 +241,6 @@ function App(): JSX.Element {
         >
           Live Changelog
         </a>.</p>
-        <p>
-          Check out{' '}
-          <a
-            href="https://tilekit.dev"
-            target="_blank"
-            rel="noreferrer"
-            style={{color: '#007bff', textDecoration: 'none'}}>
-            Tilekit
-          </a>{' '}
-          for the underlying personal software framework.
-        </p>
       </footer>
     </LexicalComposer>
   );
