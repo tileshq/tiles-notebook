@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres';
 import { notFound } from 'next/navigation';
 import Editor from '@/components/Editor';
+import { Metadata } from 'next';
 
 export const revalidate = 0; // Disable caching for this page
 
@@ -17,6 +18,33 @@ async function getSharedDocument(shareId: string) {
   }
 
   return rows[0];
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const document = await getSharedDocument(params.id);
+  
+  if (!document) {
+    return {
+      title: 'Document Not Found',
+      description: 'The requested document could not be found.',
+    };
+  }
+
+  return {
+    title: document.title,
+    description: document.description || 'A shared tile',
+    openGraph: {
+      title: document.title,
+      description: document.description || 'A shared tile',
+      type: 'article',
+      url: `https://tiles.run/shared/${params.id}`,
+    },
+    twitter: {
+      card: 'summary',
+      title: document.title,
+      description: document.description || 'A shared tile',
+    },
+  };
 }
 
 export default async function SharedDocumentPage({
