@@ -60,7 +60,7 @@ import LinkPlugin from '@/plugins/LinkPlugin';
 import ListMaxIndentLevelPlugin from '@/plugins/ListMaxIndentLevelPlugin';
 import MarkdownShortcutPlugin from '@/plugins/MarkdownShortcutPlugin';
 import {MaxLengthPlugin} from '@/plugins/MaxLengthPlugin';
-import MentionsPlugin from '@/plugins/MentionsPlugin';
+import MentionsPlugin from '@/plugins/MCPServerletListPlugin';
 import PageBreakPlugin from '@/plugins/PageBreakPlugin';
 import PollPlugin from '@/plugins/PollPlugin';
 import ShortcutsPlugin from '@/plugins/ShortcutsPlugin';

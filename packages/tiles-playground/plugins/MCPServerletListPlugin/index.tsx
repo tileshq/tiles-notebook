@@ -20,7 +20,7 @@ import {useCallback, useMemo, useState, useEffect} from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import {$createMentionNode} from '../../nodes/MentionNode';
+import {$createMentionNode} from '../../nodes/MCPServerletNode';
 import { useMcpContext } from '../../contexts/McpContext';
 import './index.css';
 

@@ -31,7 +31,7 @@ import {InlineImageNode} from './InlineImageNode/InlineImageNode';
 import {KeywordNode} from './KeywordNode';
 import {LayoutContainerNode} from './LayoutContainerNode';
 import {LayoutItemNode} from './LayoutItemNode';
-import {MentionNode} from './MentionNode';
+import {MentionNode} from './MCPServerletNode';
 import {PageBreakNode} from './PageBreakNode';
 import {PollNode} from './PollNode';
 import {SpecialTextNode} from './SpecialTextNode';

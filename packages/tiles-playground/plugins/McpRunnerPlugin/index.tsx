@@ -365,37 +365,30 @@ export default function McpRunnerPlugin(): JSX.Element {
     const nodesArray = Array.isArray(nodes) ? nodes : Array.from(nodes);
     
     for (const node of nodesArray) {
-      if ($isTextNode(node as any) && (node as any).getType() === 'mcpserver') {
-        mcpServerNode = node as TextNode;
+      if ($isTextNode(node) && node.getType() === 'mcpserver') {
+        mcpServerNode = node;
         hasFoundMcpNode = true;
         continue;
       }
       
-      if (hasFoundMcpNode && $isTextNode(node as any)) {
-        userPrompt += (node as TextNode).getTextContent() + ' ';
+      if (hasFoundMcpNode && $isTextNode(node)) {
+        userPrompt += node.getTextContent() + ' ';
       }
     }
     
     if (!mcpServerNode) {
-      //console.log('No mcpserver node found');
       setWasmError('No mcpserver node found');
       setIsProcessing(false);
       return;
     }
     
     userPrompt = userPrompt.trim();
+    
     if (!userPrompt) {
-      //console.log('No user prompt found after mcpserver node');
       setWasmError('Please add your prompt after the mcpserver tag');
       setIsProcessing(false);
       return;
     }
-
-    //console.log('Found mcpserver node:', {
-    //  text: mcpServerNode.getTextContent(),
-    //  key: mcpServerNode.getKey(),
-    //  userPrompt
-    //});
 
     // Use the ref to access the latest servlets data
     const currentServlets = servletsRef.current;
@@ -405,20 +398,16 @@ export default function McpRunnerPlugin(): JSX.Element {
     const matchingServlet = currentServlets.find((servlet) => servlet.slug === servletSlug);
 
     if (!matchingServlet) {
-      //console.log(`Servlet with slug "${servletSlug}" not found in context.`);
       setWasmError(`Servlet with slug "${servletSlug}" not found`);
       setIsProcessing(false);
       return;
     }
     
-    //console.log('Matching servlet found:', matchingServlet);
-
     // Get content address from either meta.lastContentAddress or binding.contentAddress
     const contentAddress = matchingServlet.meta?.lastContentAddress || 
                           matchingServlet.binding?.contentAddress;
     
     if (!contentAddress) {
-      //console.log('No content address found for servlet');
       setWasmError('No content address found for servlet');
       setIsProcessing(false);
       return;
@@ -517,7 +506,7 @@ Make sure to properly escape any special characters in the content string. Retur
       let response;
       
       // Insert user message to conversation display
-      insertTextAfterNode(mcpServerNode, `User: ${userPrompt}`);
+      insertTextAfterNode(mcpServerNode, `tile: ${userPrompt}`);
       
       // Agentic loop - continue running until we get a final message
       do {
@@ -786,9 +775,10 @@ Make sure to properly escape any special characters in the content string. Retur
           // Check for Ctrl+Enter or Cmd+Enter
           if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
             event.preventDefault();
+            event.stopPropagation(); // Also stop propagation to prevent other handlers
             editor.dispatchCommand(RUN_MCP_COMMAND, undefined);
           }
-        });
+        }, true); // Use capture phase to handle the event before other handlers
       }
     });
 
