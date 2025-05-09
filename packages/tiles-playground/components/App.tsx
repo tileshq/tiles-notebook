@@ -29,6 +29,7 @@ import TypingPerfPlugin from '@/plugins/TypingPerfPlugin';
 import Settings from '@/components/Settings';
 import PlaygroundEditorTheme from '@/themes/PlaygroundEditorTheme';
 import {parseAllowedColor} from '@/ui/ColorPicker';
+import Image from 'next/image';
 
 function $prepopulatedRichText() {
   const root = $getRoot();
@@ -203,9 +204,11 @@ function App(): JSX.Element {
             <DocumentHead />
             <header>
               <a href="https://tiles.run" target="_blank" rel="noreferrer">
-                <img
+                <Image
                   src="/icon.png"
                   alt="Lexical Logo"
+                  width={32}
+                  height={32}
                   style={{height: 'auto', width: '32px'}}
                 />
               </a>
@@ -232,7 +235,7 @@ function App(): JSX.Element {
           textAlign: 'center',
         }}>
         <p>A new kind of notebook for making personal software.</p>
-        <p>Technically it's a local-first, multiplayer enabled MCP client with notebook interface.</p>
+        <p>Technically it&apos;s a local-first, multiplayer enabled MCP client with notebook interface.</p>
         <p>View <a
           href="https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-"
           target="_blank"

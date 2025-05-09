@@ -44,6 +44,7 @@ import YouTubePlugin from '@/plugins/YouTubePlugin';
 import { TableContext } from '@/plugins/TablePlugin';
 import { ToolbarContext } from '@/context/ToolbarContext';
 import '@/styles/editor.css';
+import Image from 'next/image';
 
 interface SharedEditorProps {
   documentId: string;
@@ -57,7 +58,7 @@ function SharedToolbar() {
     <div className="toolbar shared-toolbar">
       <div className="toolbar-item" style={{ flex: 1 }}>
         <a href="https://tiles.run" target="_blank" rel="noreferrer" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <img
+          <Image
             src="/icon.png"
             alt="Tiles Logo"
             style={{height: 'auto', width: '32px'}}
@@ -216,7 +217,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
           textAlign: 'center',
         }}>
         <p>A new kind of notebook for making personal software.</p>
-        <p>Technically it's a local-first, multiplayer enabled MCP client with notebook interface.</p>
+        <p>Technically it&apos;s a local-first, multiplayer enabled MCP client with notebook interface.</p>
         <p>
           Check out{' '}
           <a

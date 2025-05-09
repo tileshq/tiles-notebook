@@ -47,12 +47,14 @@
   "devDependencies": {
     "@babel/plugin-transform-flow-strip-types": "^7.24.7",
     "@babel/preset-react": "^7.24.7",
+    "@lexical/eslint-plugin": "^0.31.0",
     "@types/lodash-es": "^4.14.182",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.1.0",
+    "eslint-plugin-lexical": "^0.0.1-security",
     "typescript": "^5.4.5"
   }
 }

@@ -2,7 +2,7 @@
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useEffect, useRef, useState } from 'react';
-import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR, LexicalCommand, $createTextNode, $createParagraphNode, TextNode, $insertNodes } from 'lexical';
+import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR, LexicalCommand, $createTextNode, $createParagraphNode, TextNode, $insertNodes, LexicalNode } from 'lexical';
 import { $createHorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useMcpContext } from '@/contexts/McpContext';
 import { CSSProperties } from 'react';
@@ -365,14 +365,14 @@ export default function McpRunnerPlugin(): JSX.Element {
     const nodesArray = Array.isArray(nodes) ? nodes : Array.from(nodes);
     
     for (const node of nodesArray) {
-      if ($isTextNode(node) && node.getType() === 'mcpserver') {
-        mcpServerNode = node;
+      if ($isTextNode(node as LexicalNode) && (node as TextNode).getType() === 'mcpserver') {
+        mcpServerNode = node as TextNode;
         hasFoundMcpNode = true;
         continue;
       }
       
-      if (hasFoundMcpNode && $isTextNode(node)) {
-        userPrompt += node.getTextContent() + ' ';
+      if (hasFoundMcpNode && $isTextNode(node as LexicalNode)) {
+        userPrompt += (node as TextNode).getTextContent() + ' ';
       }
     }
     
@@ -389,6 +389,12 @@ export default function McpRunnerPlugin(): JSX.Element {
       setIsProcessing(false);
       return;
     }
+
+    //console.log('Found mcpserver node:', {
+    //  text: mcpServerNode.getTextContent(),
+    //  key: mcpServerNode.getKey(),
+    //  userPrompt
+    //});
 
     // Use the ref to access the latest servlets data
     const currentServlets = servletsRef.current;
