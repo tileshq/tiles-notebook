@@ -735,6 +735,10 @@ export default function ToolbarPlugin({
 
   return (
     <div className="toolbar">
+
+      <McpRunnerPlugin />
+      <Divider />
+
       <button
         disabled={!toolbarState.canUndo || !isEditable}
         onClick={() => {
@@ -1181,7 +1185,6 @@ export default function ToolbarPlugin({
         isRTL={toolbarState.isRTL}
       />
 
-      <McpRunnerPlugin />
 
       {modal}
     </div>

@@ -61,6 +61,8 @@ function SharedToolbar() {
           <Image
             src="/icon.png"
             alt="Tiles Logo"
+            width={32}
+            height={32}
             style={{height: 'auto', width: '32px'}}
           />
         </a>
@@ -152,7 +154,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
   return (
     <>
       <SharedToolbar />
-      <div className={`editor-container ${showTreeView ? 'tree-view' : ''} ${!isRichText ? 'plain-text' : ''} read-only shared-view`}>
+      <div className={`editor-container ${showTreeView ? '' : ''} ${!isRichText ? 'plain-text' : ''} read-only shared-view`}>
         <AutoFocusPlugin />
         {selectionAlwaysOnDisplay && <SelectionAlwaysOnDisplay />}
         <AutoEmbedPlugin />
@@ -206,7 +208,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
         <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
         {shouldAllowHighlightingWithBrackets && <SpecialTextPlugin />}
       </div>
-      {showTreeView && <TreeViewPlugin />}
+      {/* {showTreeView && <TreeViewPlugin />} */}
       <footer
         style={{
           borderTop: '1px solid #eee',
