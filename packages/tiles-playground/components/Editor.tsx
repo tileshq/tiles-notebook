@@ -79,6 +79,7 @@ import ContentEditable from '@/ui/ContentEditable';
 import '../styles/editor.css';
 import {IndexedDBStoragePlugin} from '@/plugins/IndexedDBStoragePlugin';
 import {StoragePlugin} from '@/plugins/StoragePlugin';
+import { $prepopulatedRichText } from '@/utils/initialContent';
 
 // Handle window access safely with Next.js
 const skipCollaborationInit = typeof window !== 'undefined' ? 

@@ -14,7 +14,7 @@ export const isDevPlayground: boolean =
 
 export const DEFAULT_SETTINGS = {
   disableBeforeInput: false,
-  emptyEditor: isDevPlayground,
+  emptyEditor: false,
   hasLinkAttributes: false,
   isAutocomplete: false,
   isCharLimit: false,
@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS = {
   shouldUseLexicalContextMenu: false,
   showNestedEditorTreeView: false,
   showTableOfContents: false,
-  showTreeView: true,
+  showTreeView: false,
   tableCellBackgroundColor: true,
   tableCellMerge: true,
   tableHorizontalScroll: true,
