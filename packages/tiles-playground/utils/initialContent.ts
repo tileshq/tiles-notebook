@@ -20,7 +20,7 @@ export function $prepopulatedRichText() {
     // Add first paragraph
     const paragraph1 = $createParagraphNode();
     paragraph1.append(
-      $createTextNode('It's a new notebook interface for making personal software.')
+      $createTextNode('It\'s a new notebook interface for making personal software.')
     );
     root.append(paragraph1);
 
