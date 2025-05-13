@@ -14,13 +14,13 @@ export function $prepopulatedRichText() {
   if (root.getFirstChild() === null) {
     // Add heading
     const heading = $createHeadingNode('h1');
-    heading.append($createTextNode('Hello, this is a tile.'));
+    heading.append($createTextNode('Hello, this is tiles.'));
     root.append(heading);
 
     // Add first paragraph
     const paragraph1 = $createParagraphNode();
     paragraph1.append(
-      $createTextNode('Tiles is a new notebook interface for making personal software.')
+      $createTextNode('It's a new notebook interface for making personal software.')
     );
     root.append(paragraph1);
 
