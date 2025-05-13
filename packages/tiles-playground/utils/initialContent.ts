@@ -78,7 +78,7 @@ export function $prepopulatedRichText() {
     // Add final paragraph
     const paragraph6  = $createParagraphNode();
     paragraph6.append(
-      $createTextNode('We\'re constantly adding new features, so please view our '),
+      $createTextNode('We\'re constantly refining and adding new features, checkout our '),
       $createLinkNode('https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-').append(
         $createTextNode('changelog.')
       )
