@@ -14,13 +14,13 @@ export function $prepopulatedRichText() {
   if (root.getFirstChild() === null) {
     // Add heading
     const heading = $createHeadingNode('h1');
-    heading.append($createTextNode('Welcome to Tiles'));
+    heading.append($createTextNode('Hello, this is tiles.'));
     root.append(heading);
 
     // Add first paragraph
     const paragraph1 = $createParagraphNode();
     paragraph1.append(
-      $createTextNode('Tiles is a new notebook interface for making personal software.')
+      $createTextNode('It\'s a new notebook interface for making personal software.')
     );
     root.append(paragraph1);
 
@@ -65,7 +65,7 @@ export function $prepopulatedRichText() {
     // Add a paragraph with text
     const paragraph5 = $createParagraphNode();
     paragraph5.append(
-      $createTextNode('Then, put the cursor on the above line, and click on the robot icon to ask the agent to run it.'),
+      $createTextNode('Then, put the cursor on the above line, and click on the robot icon to ask the agent to run it. '),
       $createTextNode('To share this tiles, use the airplane icon in the top-right corner.'),
     );
     root.append(paragraph5);
@@ -78,9 +78,9 @@ export function $prepopulatedRichText() {
     // Add final paragraph
     const paragraph6  = $createParagraphNode();
     paragraph6.append(
-      $createTextNode('We\'re constantly adding new features, so please view our '),
-      $createLinkNode('https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-').append(
-        $createTextNode('changelog.')
+      $createTextNode('We\'re constantly refining and adding new features, checkout our '),
+      $createLinkNode('https://tiles.run/shared/yqWnH4QDjIju6eE2nX-5z').append(
+        $createTextNode('changelog. ')
       )
     );
     root.append(paragraph6);

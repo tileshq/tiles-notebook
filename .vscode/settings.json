@@ -7,5 +7,6 @@
       "source.fixAll.eslint",
       "source.fixAll.format"
     ]
-  }
+  },
+  "openctx.enable": false
 }
