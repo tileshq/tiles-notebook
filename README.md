@@ -1,4 +1,4 @@
-# Tiles
+# Tiles Notebook
 
 A new notebook interface for making personal software. A local-first, multiplayer enabled MCP client with notebook interface.
 
