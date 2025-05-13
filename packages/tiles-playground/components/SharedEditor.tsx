@@ -218,7 +218,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
           padding: '20px',
           textAlign: 'center',
         }}>
-        <p>A new kind of notebook for making personal software.</p>
+        <p>A new notebook for making personal software.</p>
         <p>Technically it&apos;s a local-first, multiplayer enabled MCP client with notebook interface.</p>
         <p>
           Check out{' '}

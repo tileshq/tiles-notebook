@@ -1,6 +1,6 @@
 # Tiles
 
-A new kind of notebook for making personal software. A local-first, multiplayer enabled MCP client with notebook interface.
+A new notebook for making personal software. A local-first, multiplayer enabled MCP client with notebook interface.
 
 ## Project Structure
 
@@ -79,10 +79,11 @@ For inquiries about building personal software quickly and influencing the futur
 
 ## Links
 
-- [Live Changelog](https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-)
 - [X/Twitter](https://x.com/tilesnotebook)
+- [Changelog](https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-)
 - [Terms](https://tiles.run/shared/RYcEAFb16btn8a7SKx3bV)
 
 ## License
 
+Apache License 2.0.
 © 2025 Tiles HQ. All rights reserved. 

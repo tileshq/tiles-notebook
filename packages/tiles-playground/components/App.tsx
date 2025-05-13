@@ -155,16 +155,15 @@ function App(): JSX.Element {
           padding: '20px',
           textAlign: 'center',
         }}>
-        <p>A new kind of notebook for making personal software.</p>
-        <p>Technically it&apos;s a local-first, multiplayer enabled MCP client with notebook interface.</p>
-        <p>View <a
-          href="https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-"
-          target="_blank"
-          rel="noreferrer"
-          style={{color: '#007bff', textDecoration: 'none'}}
-        >
-          Live Changelog
-        </a>.</p>
+        <p>
+        <a href="https://github.com/tileshq/tiles" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Github</a>
+        {' • '}
+          <a href="https://x.com/tilesnotebook" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>X/Twitter</a>
+          {' • '}
+          <a href="https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Changelog</a>
+          {' • '}
+          <a href="https://tiles.run/shared/RYcEAFb16btn8a7SKx3bV" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Terms</a>
+        </p>
       </footer>
     </LexicalComposer>
   );

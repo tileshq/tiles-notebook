@@ -4,8 +4,8 @@ import './globals.css';
 import { McpProvider } from '../contexts/McpContext';
 
 export const metadata: Metadata = {
-  title: 'Tiles: A new kind of notebook for making personal software',
-  description: 'A new kind of notebook for making personal software',
+  title: 'Tiles: A new notebook for making personal software',
+  description: 'A new notebook for making personal software',
   icons: {
     icon: [
       { url: '/favicon.ico' },
