@@ -79,11 +79,17 @@ export function $prepopulatedRichText() {
     const paragraph6  = $createParagraphNode();
     paragraph6.append(
       $createTextNode('We\'re constantly refining and adding new features, checkout our '),
-      $createLinkNode('https://tiles.run/shared/yqWnH4QDjIju6eE2nX-5z').append(
-        $createTextNode('changelog. ')
-      )
+      $createLinkNode('https://tiles.run/shared/5eZsvYNcG3CmgMVKJACZC').append(
+        $createTextNode('changelog.')
+      ),
+
     );
     root.append(paragraph6);
+
+    // Add a new paragraph blank line
+    const blankLine5 = $createParagraphNode();
+    root.append(blankLine5);
+
 
   }
 } 
