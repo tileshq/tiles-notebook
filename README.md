@@ -1,4 +1,4 @@
-# Tiles Notebook
+# Tiles
 
 A new notebook interface for making personal software. A local-first, multiplayer enabled MCP client with notebook interface.
 
@@ -81,7 +81,7 @@ For inquiries about building personal software quickly and influencing the futur
 
 - [Github](https://github.com/tileshq/)
 - [X/Twitter](https://x.com/tilesnotebook)
-- [Changelog](https://tiles.run/shared/5eZsvYNcG3CmgMVKJACZC)
+- [Changelog](https://www.tiles.run/shared/Aa2sK9GLwHFkCZOPevge-)
 - [Terms](https://tiles.run/shared/RYcEAFb16btn8a7SKx3bV)
 
 ## License
