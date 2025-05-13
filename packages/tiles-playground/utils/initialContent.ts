@@ -80,7 +80,7 @@ export function $prepopulatedRichText() {
     paragraph6.append(
       $createTextNode('We\'re constantly refining and adding new features, checkout our '),
       $createLinkNode('https://tiles.run/shared/yqWnH4QDjIju6eE2nX-5z').append(
-        $createTextNode('changelog.')
+        $createTextNode('changelog. ')
       )
     );
     root.append(paragraph6);

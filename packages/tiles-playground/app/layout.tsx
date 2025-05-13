@@ -16,6 +16,18 @@ export const metadata: Metadata = {
     ],
     shortcut: ['/favicon.ico'],
   },
+  openGraph: {
+    title: 'Tiles: A new notebook for making personal software',
+    description: 'A new notebook for making personal software',    
+    images: [
+      {
+        url: '/api/og', // This should point to your OpenGraph route
+        width: 1200,
+        height: 630,
+        alt: 'Tiles',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
