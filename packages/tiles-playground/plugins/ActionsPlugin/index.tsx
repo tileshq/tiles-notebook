@@ -93,6 +93,81 @@ async function shareDoc(doc: SerializedDocument): Promise<void> {
   await window.navigator.clipboard.writeText(newUrl);
 }
 
+function WaitlistPanel({
+  onClose,
+}: {
+  onClose: () => void;
+}): JSX.Element {
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const showFlashMessage = useFlashMessage();
+
+  const handleSubmit = async () => {
+    if (!email) {
+      showFlashMessage('Please enter an email address');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to join waitlist');
+      }
+
+      showFlashMessage('Successfully joined the waitlist!');
+      onClose();
+    } catch (error) {
+      console.error('Error joining waitlist:', error);
+      showFlashMessage('Failed to join waitlist. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="waitlist-panel">
+      <div className="waitlist-panel-header">
+        <h3>Join Waitlist</h3>
+        <button
+          className="close-button"
+          onClick={onClose}
+          aria-label="Close waitlist panel">
+          ×
+        </button>
+      </div>
+      <div className="waitlist-panel-content">
+        <p>Enter your email to join our waitlist and be notified when we launch.</p>
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSubmit();
+            }
+          }}
+        />
+        <div className="button-container">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}>
+            {isSubmitting ? 'Joining...' : 'Join Waitlist'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ActionsPlugin({
   isRichText,
   shouldPreserveNewLinesInMarkdown,
@@ -104,6 +179,7 @@ export default function ActionsPlugin({
   const [isEditable, setIsEditable] = useState(() => editor.isEditable());
   const [connected, setConnected] = useState(false);
   const [isEditorEmpty, setIsEditorEmpty] = useState(true);
+  const [showWaitlist, setShowWaitlist] = useState(false);
   const [modal, showModal] = useModal();
   const showFlashMessage = useFlashMessage();
   const {isCollabActive} = useCollaborationContext();
@@ -195,120 +271,63 @@ export default function ActionsPlugin({
   }, [editor, shouldPreserveNewLinesInMarkdown]);
 
   return (
-    <div className="actions">
-      {/*<button
-        className="action-button import"
-        onClick={() => importFile(editor)}
-        title="Import"
-        aria-label="Import editor state from JSON">
-        <i className="import" />
-      </button>
-
-      <button
-        className="action-button export"
-        onClick={() =>
-          exportFile(editor, {
-            fileName: `Playground ${new Date().toISOString()}`,
-            source: 'Playground',
-          })
-        }
-        title="Export"
-        aria-label="Export editor state to JSON">
-        <i className="export" />
-      </button> */}
-      <button
-        className="action-button share"
-        disabled={isCollabActive || INITIAL_SETTINGS.isCollab}
-        onClick={async () => {
-          try {
-            // Create document if it doesn't exist
-            const editorStateJSON = JSON.stringify(editor.getEditorState());
-            const createResponse = await fetch('/api/documents', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                content: editorStateJSON,
-              }),
-            });
-
-            if (!createResponse.ok) {
-              throw new Error('Failed to create document');
-            }
-
-            const doc = await createResponse.json();
-
-            // Create share link
-            const shareResponse = await fetch(`/api/documents/${doc.id}/share`, {
-              method: 'POST',
-            });
-
-            if (!shareResponse.ok) {
-              throw new Error('Failed to create share link');
-            }
-
-            const { shareUrl } = await shareResponse.json();
-            await navigator.clipboard.writeText(shareUrl);
-            showFlashMessage('Share URL copied to clipboard');
-          } catch (error) {
-            console.error('Error sharing document:', error);
-            showFlashMessage('Failed to create share link');
-          }
-        }}
-        title="Share"
-        aria-label="Share document link">
-        <i className="share" />
-      </button>
-     {/* <button
-        className="action-button clear"
-        disabled={isEditorEmpty}
-        onClick={() => {
-          showModal('Clear editor', (onClose) => (
-            <ShowClearDialog editor={editor} onClose={onClose} />
-          ));
-        }}
-        title="Clear"
-        aria-label="Clear editor contents">
-        <i className="clear" />
-      </button>
-      <button
-        className={`action-button ${!isEditable ? 'unlock' : 'lock'}`}
-        onClick={() => {
-          // Send latest editor state to commenting validation server
-          if (isEditable) {
-            sendEditorState(editor);
-          }
-          editor.setEditable(!editor.isEditable());
-        }}
-        title="Read-Only Mode"
-        aria-label={`${!isEditable ? 'Unlock' : 'Lock'} read-only mode`}>
-        <i className={!isEditable ? 'unlock' : 'lock'} />
-      </button>
-      <button
-        className="action-button"
-        onClick={handleMarkdownToggle}
-        title="Convert From Markdown"
-        aria-label="Convert from markdown">
-        <i className="markdown" />
-      </button>
-      {isCollabActive && (
+    <>
+      <div className="actions">
         <button
-          className="action-button connect"
-          onClick={() => {
-            editor.dispatchCommand(TOGGLE_CONNECT_COMMAND, !connected);
-          }}
-          title={`${
-            connected ? 'Disconnect' : 'Connect'
-          } Collaborative Editing`}
-          aria-label={`${
-            connected ? 'Disconnect from' : 'Connect to'
-          } a collaborative editing server`}>
-          <i className={connected ? 'disconnect' : 'connect'} />
+          className="action-button waitlist"
+          onClick={() => setShowWaitlist(!showWaitlist)}
+          title="Join Waitlist"
+          aria-label="Join the waitlist"
+          style={{ color: '#444' }}>
+          <i className="users" />
+          <span>Join Waitlist</span>
         </button>
+        <button
+          className="action-button share"
+          disabled={isCollabActive || INITIAL_SETTINGS.isCollab}
+          onClick={async () => {
+            try {
+              const editorStateJSON = JSON.stringify(editor.getEditorState());
+              const createResponse = await fetch('/api/documents', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  content: editorStateJSON,
+                }),
+              });
+
+              if (!createResponse.ok) {
+                throw new Error('Failed to create document');
+              }
+
+              const doc = await createResponse.json();
+              const shareResponse = await fetch(`/api/documents/${doc.id}/share`, {
+                method: 'POST',
+              });
+
+              if (!shareResponse.ok) {
+                throw new Error('Failed to create share link');
+              }
+
+              const { shareUrl } = await shareResponse.json();
+              await navigator.clipboard.writeText(shareUrl);
+              showFlashMessage('Share URL copied to clipboard');
+            } catch (error) {
+              console.error('Error sharing document:', error);
+              showFlashMessage('Failed to create share link');
+            }
+          }}
+          title="Share"
+          aria-label="Share document link">
+          <i className="share" />
+        </button>
+      </div>
+      {showWaitlist && (
+        <WaitlistPanel onClose={() => setShowWaitlist(false)} />
       )}
-      {modal}*/}
-    </div> 
+    </>
   );
 }
 

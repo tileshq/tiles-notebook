@@ -1791,7 +1791,7 @@
    position: fixed;
    right: 20px; /* Position it to the left of the options button */
    top: 20px;
-   z-index: 10;
+   z-index: 100; /* Lower z-index than modal */
    background-color: #ffffff; /* Dark background like options button */
    color: white; /* White text for contrast */
    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.3); /* Same shadow as options button */
@@ -1886,5 +1886,216 @@
  
  .shared-view .editor-scroller {
    min-height: 300px;
+ }
+ 
+ /* Add styling for the waitlist button */
+ .action-button.waitlist {
+   position: fixed;
+   right: 84px; /* Position it to the left of share button */
+   top: 20px;
+   z-index: 100; /* Lower z-index than modal */
+   background-color: #ffffff;
+   color: #444;
+   box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.3);
+   height: 40px;
+   border-radius: 20px;
+   padding: 0 15px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 5px;
+ }
+ 
+ .action-button.waitlist:hover {
+   background-color: #f5f5f5;
+ }
+ 
+ .action-button.waitlist i.users {
+   background-image: url(../images/icons/user.svg);
+   width: 15px;
+   height: 15px;
+   display: inline-block;
+   background-size: contain;
+   vertical-align: middle;
+ }
+ 
+ /* Add styling for the waitlist dialog */
+ .waitlist-dialog {
+   padding: 20px;
+   min-width: 300px;
+ }
+ 
+ .waitlist-dialog h3 {
+   margin: 0 0 16px 0;
+   color: #333;
+ }
+ 
+ .primary-button {
+   background-color: #007bff !important;
+   color: #fff !important;
+ }
+ 
+ .secondary-button {
+   background-color: #eee !important;
+   color: #333 !important;
+ }
+ 
+ /* Add styling for the modal */
+ .Modal__overlay {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   position: fixed;
+   flex-direction: column;
+   top: 0;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   background-color: rgba(40, 40, 40, 0.6);
+   z-index: 9999; /* Increase z-index to be above all other elements */
+ }
+
+ .Modal__modal {
+   background-color: white;
+   padding: 20px;
+   border-radius: 8px;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+   min-width: 300px;
+   position: relative; /* Add position relative */
+   z-index: 10000; /* Make modal content above the overlay */
+ }
+
+ .Modal__title {
+   font-size: 18px;
+   margin-bottom: 16px;
+   color: #333;
+ }
+
+ .Modal__content {
+   margin-top: 16px;
+ }
+
+ .Modal__closeButton {
+   position: absolute;
+   top: 10px;
+   right: 10px;
+   background: none;
+   border: none;
+   font-size: 20px;
+   cursor: pointer;
+   color: #666;
+ }
+ 
+ /* Add styling for the waitlist panel */
+ .waitlist-panel {
+   position: fixed;
+   right: 84px;
+   top: 80px; /* Below the action buttons */
+   width: 300px;
+   background: white;
+   border-radius: 8px;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+   z-index: 50;
+   overflow: hidden;
+   animation: slideIn 0.2s ease-out;
+ }
+
+ @keyframes slideIn {
+   from {
+     transform: translateX(100%);
+     opacity: 0;
+   }
+   to {
+     transform: translateX(0);
+     opacity: 1;
+   }
+ }
+
+ .waitlist-panel-header {
+   padding: 16px;
+   border-bottom: 1px solid #eee;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   background: #f8f9fa;
+ }
+
+ .waitlist-panel-header h3 {
+   margin: 0;
+   font-size: 16px;
+   color: #333;
+   font-weight: 600;
+ }
+
+ .waitlist-panel-header .close-button {
+   background: none;
+   border: none;
+   font-size: 20px;
+   color: #666;
+   cursor: pointer;
+   padding: 0;
+   width: 24px;
+   height: 24px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 12px;
+   transition: background-color 0.2s;
+ }
+
+ .waitlist-panel-header .close-button:hover {
+   background: rgba(0, 0, 0, 0.05);
+ }
+
+ .waitlist-panel-content {
+   padding: 16px;
+ }
+
+ .waitlist-panel-content p {
+   margin: 0 0 16px 0;
+   color: #666;
+   font-size: 14px;
+   line-height: 1.5;
+ }
+
+ .waitlist-panel-content input {
+   width: 90%;
+   padding: 10px 12px;
+   border: 1px solid #ddd;
+   border-radius: 6px;
+   font-size: 14px;
+   margin-bottom: 16px;
+   transition: all 0.2s;
+ }
+
+ .waitlist-panel-content input:focus {
+   outline: none;
+   border-color: #f0139f1b;
+   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+ }
+
+ .waitlist-panel-content .button-container {
+   display: flex;
+   justify-content: flex-end;
+ }
+
+ .waitlist-panel-content button {
+   background-color: #007bff;
+   color: white;
+   border: none;
+   padding: 8px 16px;
+   border-radius: 6px;
+   font-size: 14px;
+   cursor: pointer;
+   transition: background-color 0.2s;
+ }
+
+ .waitlist-panel-content button:hover {
+   background-color: #b3008f;
+ }
+
+ .waitlist-panel-content button:disabled {
+   background-color: #ccc;
+   cursor: not-allowed;
  }
  
