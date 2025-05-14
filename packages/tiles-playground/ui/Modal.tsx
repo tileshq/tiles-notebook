@@ -27,6 +27,7 @@ function PortalImpl({
   title: string;
 }) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (modalRef.current !== null) {
@@ -35,44 +36,37 @@ function PortalImpl({
   }, []);
 
   useEffect(() => {
-    let modalOverlayElement: HTMLElement | null = null;
     const handler = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
       }
     };
-    const clickOutsideHandler = (event: MouseEvent) => {
-      const target = event.target;
+
+    const handleOverlayClick = (event: MouseEvent) => {
       if (
-        modalRef.current !== null &&
-        isDOMNode(target) &&
-        !modalRef.current.contains(target) &&
-        closeOnClickOutside
+        closeOnClickOutside &&
+        event.target === overlayRef.current
       ) {
         onClose();
       }
     };
-    const modelElement = modalRef.current;
-    if (modelElement !== null) {
-      modalOverlayElement = modelElement.parentElement;
-      if (modalOverlayElement !== null) {
-        modalOverlayElement.addEventListener('click', clickOutsideHandler);
-      }
-    }
 
     window.addEventListener('keydown', handler);
+    overlayRef.current?.addEventListener('click', handleOverlayClick);
 
     return () => {
       window.removeEventListener('keydown', handler);
-      if (modalOverlayElement !== null) {
-        modalOverlayElement?.removeEventListener('click', clickOutsideHandler);
-      }
+      overlayRef.current?.removeEventListener('click', handleOverlayClick);
     };
   }, [closeOnClickOutside, onClose]);
 
   return (
-    <div className="Modal__overlay" role="dialog">
-      <div className="Modal__modal" tabIndex={-1} ref={modalRef}>
+    <div className="Modal__overlay" role="dialog" ref={overlayRef}>
+      <div 
+        className="Modal__modal" 
+        tabIndex={-1} 
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()}>
         <h2 className="Modal__title">{title}</h2>
         <button
           className="Modal__closeButton"
