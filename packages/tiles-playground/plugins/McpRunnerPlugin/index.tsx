@@ -8,6 +8,7 @@ import { useMcpContext } from '@/contexts/McpContext';
 import { CSSProperties } from 'react';
 import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions } from '../../lib/wasm-executor';
 import { $createArtifactNode, $isArtifactNode, ArtifactContentType } from '../../nodes/ArtifactNode';
+import { $setSelection } from 'lexical';
 
 // Define a custom command for running MCP
 export const RUN_MCP_COMMAND: LexicalCommand<void> = {
@@ -343,48 +344,69 @@ export default function McpRunnerPlugin(): JSX.Element {
     
     const selection = $getSelection();
     if (!$isRangeSelection(selection)) {
+      setWasmError('Please select some text first');
       setIsProcessing(false);
       return;
     }
     
-    // Get the current line's nodes
-    const anchor = selection.anchor;
-    const nodes = anchor.getNode().getParent()?.getChildren();
+    // Get the selected text
+    const userPrompt = selection.getTextContent().trim();
+
+    // Clear/unselect the selection
+    editor.update(() => {
+      $setSelection(null);
+    });
     
-    if (!nodes) {
+    if (!userPrompt) {
+      setWasmError('Please select some text first');
+      setIsProcessing(false);
+      return;
+    }
+  
+    // Find the last node in the selection to insert results after
+    const anchorNode = selection.anchor.getNode();
+    const focusNode = selection.focus.getNode();
+    const lastNode = $isTextNode(focusNode) ? focusNode : 
+                    ($isTextNode(anchorNode) ? anchorNode : null);
+    
+    if (!lastNode) {
+      setWasmError('Selection must include text nodes');
       setIsProcessing(false);
       return;
     }
     
     // Find mcpserver node and subsequent nodes for input
     let mcpServerNode: TextNode | null = null;
-    let userPrompt = '';
     let hasFoundMcpNode = false;
+    let processedPrompt = '';
     
-    // Convert nodes to array if needed
-    const nodesArray = Array.isArray(nodes) ? nodes : Array.from(nodes);
+    // Get all nodes in the selection
+    const nodes = selection.getNodes();
     
-    for (const node of nodesArray) {
-      if ($isTextNode(node as LexicalNode) && (node as TextNode).getType() === 'mcpserver') {
-        mcpServerNode = node as TextNode;
+    // Process each node in the selection
+    for (const node of nodes) {
+      if ($isTextNode(node) && node.getType() === 'mcpserver') {
+        mcpServerNode = node;
         hasFoundMcpNode = true;
         continue;
       }
       
-      if (hasFoundMcpNode && $isTextNode(node as LexicalNode)) {
-        userPrompt += (node as TextNode).getTextContent() + ' ';
+      if (hasFoundMcpNode && $isTextNode(node)) {
+        processedPrompt += node.getTextContent() + ' ';
       }
     }
     
     if (!mcpServerNode) {
-      setWasmError('No mcpserver node found');
+      setWasmError('No mcpserver node found in selection');
       setIsProcessing(false);
       return;
     }
     
-    userPrompt = userPrompt.trim();
+    // Use either the processed prompt if we found nodes after mcpserver,
+    // or fall back to the entire selection if not
+    const finalPrompt = processedPrompt.trim() || userPrompt;
     
-    if (!userPrompt) {
+    if (!finalPrompt) {
       setWasmError('Please add your prompt after the mcpserver tag');
       setIsProcessing(false);
       return;
@@ -393,7 +415,7 @@ export default function McpRunnerPlugin(): JSX.Element {
     //console.log('Found mcpserver node:', {
     //  text: mcpServerNode.getTextContent(),
     //  key: mcpServerNode.getKey(),
-    //  userPrompt
+    //  userPrompt: finalPrompt
     //});
 
     // Use the ref to access the latest servlets data
@@ -420,7 +442,7 @@ export default function McpRunnerPlugin(): JSX.Element {
     }
     
     // Insert initial message to show processing
-    insertTextAfterNode(mcpServerNode, `Processing request: "${userPrompt}"...`);
+    insertTextAfterNode(mcpServerNode, `Processing request: "${finalPrompt}"...`);
     
     try {
       // Fetch WASM content
@@ -499,20 +521,20 @@ Make sure to properly escape any special characters in the content string. Retur
       // Start the conversation with the initial message
       let messages: Message[] = [
         artifactSystemMessage, // Add the system message about artifacts first
-        { role: 'user', content: userPrompt }
+        { role: 'user', content: finalPrompt }
       ];
       // --- End Artifact System Prompt ---
       
       // Keep track of conversation history for display
       let conversationHistory: Message[] = [{
         role: 'user',
-        content: userPrompt
+        content: finalPrompt
       }];
       
       let response;
       
       // Insert user message to conversation display
-      insertTextAfterNode(mcpServerNode, `tile: ${userPrompt}`);
+      insertTextAfterNode(mcpServerNode, `tile: ${finalPrompt}`);
       
       // Agentic loop - continue running until we get a final message
       do {
