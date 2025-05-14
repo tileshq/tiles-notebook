@@ -32,7 +32,7 @@ export function $prepopulatedRichText() {
     const paragraph2 = $createParagraphNode();
     paragraph2.append(
       $createTextNode('Technically it\'s a local-first, shareable, MCP client with a notebook interface.'),
-      $createTextNode(' To run MCP clients as agents, type \'@\' or click on the menu on the right, and talk to them in plain English.')
+      $createTextNode(' To run MCP servers as agents, type \'@\' or click on the menu on the right, and talk to them in natural language.')
     );
     root.append(paragraph2);
 
@@ -55,7 +55,7 @@ export function $prepopulatedRichText() {
     const paragraph4 = $createParagraphNode();
     const mentionNode = $createMentionNode('dylibso/eval-py');
     paragraph4.append(mentionNode);
-    paragraph4.append($createTextNode(' My current left balance and financial analysis: Balance As of 5th April Bank: 87150 Credit debt (ICICI+HDFC+AXIS): 47504 + 35000 + 25732 ,  Splitwise debt: -261295. Draw a mermaid diagram to show how my money was spent and how much is left.'));
+    paragraph4.append($createTextNode(' My current left balance and financial analysis: Balance As of 5th April Bank: 87150 Credit debt (ICICI+HDFC+AXIS): 47504 + 35000 + 25732 ,  Splitwise debt: -261295. Draw a diagram to show how my money was spent and how much is left.'));
     root.append(paragraph4);
 
     // Add a horizontal line
