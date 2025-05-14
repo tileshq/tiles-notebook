@@ -828,10 +828,10 @@ Make sure to properly escape any special characters in the content string. Retur
         onClick={handleRunMcp}
         disabled={isProcessing}
         style={isProcessing ? {...styles.button, ...styles.buttonDisabled} : styles.button}
-        title="Run MCP (Ctrl+Enter)"
+        title="Run Tiles (Ctrl+Enter)"
         className="toolbar-item"
       >
-        🤖
+      Run Tiles  <img src="/icon.png" alt="Run Icon" style={{height: '1em', width: '1em', verticalAlign: 'middle', marginRight: '0.45em', marginLeft: '0.45em'}} />
       </button>
       {wasmError && <div style={styles.error}>{wasmError}</div>}
     </div>
