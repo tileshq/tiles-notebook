@@ -32,6 +32,7 @@ import {createPortal} from 'react-dom';
 import {getDOMRangeRect} from '../../utils/getDOMRangeRect';
 import {getSelectedNode} from '../../utils/getSelectedNode';
 import {setFloatingElemPosition} from '../../utils/setFloatingElemPosition';
+import {RUN_MCP_COMMAND} from '../McpRunnerPlugin';
 //import {INSERT_INLINE_COMMAND} from '../CommentPlugin';
 
 function TextFormatFloatingToolbar({
@@ -198,6 +199,16 @@ function TextFormatFloatingToolbar({
           <button
             type="button"
             onClick={() => {
+              editor.dispatchCommand(RUN_MCP_COMMAND, undefined);
+            }}
+            className={'popup-item spaced'}
+            title="Run Tiles"
+            aria-label="Run Tiles">
+            Run Tiles  <img src="/icon.png" alt="Run Icon" style={{height: '1em', width: '1em', verticalAlign: 'middle', marginRight: '0.45em', marginLeft: '0.45em'}} />
+      </button>
+          <button
+            type="button"
+            onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
             }}
             className={'popup-item spaced ' + (isBold ? 'active' : '')}
@@ -225,7 +236,7 @@ function TextFormatFloatingToolbar({
             aria-label="Format text to underlined">
             <i className="format underline" />
           </button>
-          <button
+          {/* <button
             type="button"
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
@@ -284,7 +295,7 @@ function TextFormatFloatingToolbar({
             title="Capitalize"
             aria-label="Format text to capitalize">
             <i className="format capitalize" />
-          </button>
+          </button> */}
           <button
             type="button"
             onClick={() => {

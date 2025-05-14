@@ -1178,12 +1178,12 @@ export default function ToolbarPlugin({
         </>
       )}
       <Divider />
-      <ElementFormatDropdown
+      {/* <ElementFormatDropdown
         disabled={!isEditable}
         value={toolbarState.elementFormat}
         editor={activeEditor}
         isRTL={toolbarState.isRTL}
-      />
+      /> */}
 
 
       {modal}
