@@ -1,11 +1,11 @@
-import { createPlugin } from 'extism';
+import { createPlugin, LogLevel, ExtismPluginOptions } from 'extism';
 
 export interface WasmExecutorOptions {
   useWasi?: boolean;
   config?: Record<string, any>;
   allowedHosts?: string[];
   allowedPaths?: Record<string, string>;
-  logLevel?: string;
+  logLevel?: LogLevel;
   runInWorker?: boolean;
 }
 
@@ -30,27 +30,12 @@ export class WasmExecutor {
   }
 
   private async initialize(wasmBuffer: ArrayBuffer, options: WasmExecutorOptions): Promise<void> {
-    const pluginOptions: any = {
+    const pluginOptions: ExtismPluginOptions = {
       useWasi: options.useWasi ?? true,
       config: options.config || {},
     };
     
-    // Only use worker if supported and explicitly requested
-    if (options.runInWorker) {
-      // Check if SharedArrayBuffer is available
-      if (isSharedArrayBufferAvailable()) {
-        pluginOptions.runInWorker = true;
-      } else {
-        console.warn(
-          'SharedArrayBuffer is not available. Cross-Origin Isolation is required for threaded WASM. ' +
-          'Check that your server has the proper COOP/COEP headers. ' +
-          'Falling back to single-threaded mode.'
-        );
-        pluginOptions.runInWorker = false;
-      }
-    } else {
-      pluginOptions.runInWorker = false;
-    }
+    pluginOptions.runInWorker = true;
 
     if (options.allowedHosts?.length) {
       pluginOptions.allowedHosts = options.allowedHosts;
@@ -60,21 +45,27 @@ export class WasmExecutor {
       pluginOptions.allowedPaths = options.allowedPaths;
     }
 
+    // Set up logging if logLevel is provided
     if (options.logLevel) {
       pluginOptions.logger = console;
       pluginOptions.logLevel = options.logLevel;
     }
 
+    console.log('Initializing WASM plugin with options:', pluginOptions);
     this.plugin = await createPlugin(wasmBuffer, pluginOptions);
+    console.debug('WASM plugin initialized successfully');
   }
 
   async execute(functionName: string, input: string): Promise<WasmExecutorResult> {
     try {
+      console.debug(`Executing WASM function: ${functionName}`);
       const outputBuffer = await this.plugin.call(functionName, input);
+      console.debug(`WASM function ${functionName} executed successfully`);
       return {
         output: outputBuffer?.text() || ''
       };
     } catch (error) {
+      console.error(`Error executing WASM function ${functionName}:`, error);
       return {
         output: '',
         error: error instanceof Error ? error.message : String(error)
@@ -105,4 +96,4 @@ export async function createWasmExecutorFromBuffer(
   options: WasmExecutorOptions = {}
 ): Promise<WasmExecutor> {
   return new WasmExecutor(buffer, options);
-}
+} 

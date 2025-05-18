@@ -2099,3 +2099,137 @@
    cursor: not-allowed;
  }
  
+ /* Add styling for the config panel */
+ .config-panel {
+   position: fixed;
+   right: 24px;
+   top: 120px;
+   width: 400px;
+   background: white;
+   border-radius: 8px;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+   z-index: 50;
+   overflow: hidden;
+   animation: slideIn 0.2s ease-out;
+   display: flex;
+   flex-direction: column;
+   max-height: calc(100vh - 180px); /* Limit max height to viewport height minus some padding */
+ }
+
+ .config-panel-header {
+   padding: 16px;
+   border-bottom: 1px solid #eee;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   background: #f8f9fa;
+   flex-shrink: 0; /* Prevent header from shrinking */
+ }
+
+ .config-panel-header h3 {
+   margin: 0;
+   font-size: 16px;
+   color: #333;
+   font-weight: 600;
+ }
+
+ .config-panel-header .close-button {
+   background: none;
+   border: none;
+   font-size: 20px;
+   color: #666;
+   cursor: pointer;
+   padding: 0;
+   width: 24px;
+   height: 24px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 12px;
+   transition: background-color 0.2s;
+ }
+
+ .config-panel-header .close-button:hover {
+   background: rgba(0, 0, 0, 0.05);
+ }
+
+ .config-panel-content {
+   padding: 16px;
+   overflow-y: auto; /* Enable vertical scrolling */
+   flex-grow: 1; /* Allow content to grow and fill available space */
+ }
+
+ .config-panel-content p {
+   margin: 0 0 16px 0;
+   color: #666;
+   font-size: 14px;
+   line-height: 1.5;
+ }
+
+ .config-pair {
+   display: flex;
+   gap: 8px;
+   margin-bottom: 8px;
+   align-items: center;
+ }
+
+ .config-pair input {
+   flex: 1;
+   padding: 8px 12px;
+   border: 1px solid #ddd;
+   border-radius: 6px;
+   font-size: 14px;
+   transition: all 0.2s;
+ }
+
+ .config-pair input:focus {
+   outline: none;
+   border-color: #007bff;
+   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+ }
+
+ .config-pair .remove-pair {
+   background: none;
+   border: none;
+   color: #666;
+   cursor: pointer;
+   padding: 4px 8px;
+   font-size: 16px;
+   border-radius: 4px;
+   transition: all 0.2s;
+ }
+
+ .config-pair .remove-pair:hover {
+   background: rgba(0, 0, 0, 0.05);
+   color: #dc3545;
+ }
+
+ .add-pair {
+   width: 100%;
+   padding: 8px 16px;
+   background: #f8f9fa;
+   border: 1px dashed #ddd;
+   border-radius: 6px;
+   color: #666;
+   cursor: pointer;
+   font-size: 14px;
+   transition: all 0.2s;
+   margin-top: 8px;
+ }
+
+ .add-pair:hover {
+   background: #e9ecef;
+   border-color: #007bff;
+   color: #007bff;
+ }
+
+ /* Add settings icon */
+ i.settings {
+    background-image: url(../images/icons/gear.svg);
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    background-size: contain;
+    vertical-align: top;
+    margin-left: 2px;
+  }
