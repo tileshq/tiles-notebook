@@ -226,6 +226,128 @@ const styles: Record<string, CSSProperties> = {
   }
 };
 
+// Add ConfigPanel component before McpRunnerPlugin
+function ConfigPanel({
+  onClose,
+  config,
+  onConfigChange,
+}: {
+  onClose: () => void;
+  config: Record<string, string>;
+  onConfigChange: (newConfig: Record<string, string>) => void;
+}): JSX.Element {
+  const [keyValuePairs, setKeyValuePairs] = useState<Array<{key: string; value: string}>>(
+    Object.entries(config).length > 0 
+      ? Object.entries(config).map(([key, value]) => ({ key, value }))
+      : [{ key: '', value: '' }]
+  );
+
+  // Log initial config
+  useEffect(() => {
+    //console.log('ConfigPanel mounted with initial config:', config);
+  }, []);
+
+  const handleAddPair = () => {
+    //console.log('Adding new key-value pair');
+    setKeyValuePairs([...keyValuePairs, { key: '', value: '' }]);
+  };
+
+  const handleRemovePair = (index: number) => {
+    //console.log('Removing pair at index:', index);
+    const newPairs = keyValuePairs.filter((_, i) => i !== index);
+    setKeyValuePairs(newPairs);
+    
+    // Create a new config object from the remaining pairs
+    const newConfig = newPairs.reduce((acc, { key, value }) => {
+      if (key.trim() !== '' && value.trim() !== '') {
+        // Remove any quotes from the key and value
+        const cleanKey = key.replace(/^"|"$/g, '').trim();
+        const cleanValue = value.replace(/^"|"$/g, '').trim();
+        if (cleanKey && cleanValue) {
+          acc[cleanKey] = cleanValue;
+        }
+      }
+      return acc;
+    }, {} as Record<string, string>);
+    
+    console.log('New config after removal:', newConfig);
+    onConfigChange(newConfig);
+  };
+
+  const handlePairChange = (index: number, field: 'key' | 'value', newValue: string) => {
+    //console.log(`Changing ${field} at index ${index} to:`, newValue);
+    const newPairs = keyValuePairs.map((pair, i) => 
+      i === index ? { ...pair, [field]: newValue } : pair
+    );
+    setKeyValuePairs(newPairs);
+    
+    // Create a new config object from the pairs, excluding empty pairs
+    const newConfig = newPairs.reduce((acc, { key, value }) => {
+      if (key !== '""' && value !== '""' && key.trim() !== '' && value.trim() !== '') {
+        // Remove any quotes from the key and value
+        const cleanKey = key.replace(/^"|"$/g, '').trim();
+        const cleanValue = value.replace(/^"|"$/g, '').trim();
+        if (cleanKey && cleanValue) {
+          acc[cleanKey] = cleanValue;
+        }
+      }
+      return acc;
+    }, {} as Record<string, string>);
+    
+    console.log('New config being set:', newConfig);
+    onConfigChange(newConfig);
+  };
+
+  // Log whenever keyValuePairs changes
+  useEffect(() => {
+    console.log('Current keyValuePairs:', keyValuePairs);
+  }, [keyValuePairs]);
+
+  return (
+    <div className="config-panel">
+      <div className="config-panel-header">
+        <h3>Key configuration</h3>
+        <button
+          className="close-button"
+          onClick={onClose}
+          aria-label="Close config panel">
+          ×
+        </button>
+      </div>
+      <div className="config-panel-content">
+        <p>Add key-value pairs for your configuration.</p>
+        {keyValuePairs.map((pair, index) => (
+          <div key={index} className="config-pair">
+            <input
+              type="text"
+              placeholder="Key"
+              value={pair.key.replace(/^"|"$/g, '')} // Remove quotes for display
+              onChange={(e) => handlePairChange(index, 'key', e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Value"
+              value={pair.value.replace(/^"|"$/g, '')} // Remove quotes for display
+              onChange={(e) => handlePairChange(index, 'value', e.target.value)}
+            />
+            <button
+              className="remove-pair"
+              onClick={() => handleRemovePair(index)}
+              aria-label="Remove pair">
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          className="add-pair"
+          onClick={handleAddPair}>
+          + Add Pair
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function McpRunnerPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext();
   const { servlets, refreshServlets, isLoading, error, fetchWasmContent } = useMcpContext();
@@ -233,17 +355,30 @@ export default function McpRunnerPlugin(): JSX.Element {
   const [wasmError, setWasmError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [executionResult, setExecutionResult] = useState<WasmExecutorResult | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
+  const [config, setConfig] = useState<Record<string, string>>({});
   
-  // Configuration options for WasmExecutor
-  const wasmExecutorOptions: WasmExecutorOptions = {
+  // Create a ref to store the latest config
+  const configRef = useRef(config);
+  
+  // Update configRef whenever config changes
+  useEffect(() => {
+    configRef.current = config;
+    console.log('Config updated in McpRunnerPlugin:', config);
+  }, [config]);
+  
+  // Configuration options for WasmExecutor - moved inside processCurrentSelection
+  const getWasmExecutorOptions = (): WasmExecutorOptions => ({
     useWasi: true,
     allowedPaths: {
       '/tmp': '/tmp',
       '/data': '/data'
     },
     logLevel: 'debug',
-    runInWorker: true // Set to true if you want to run in a worker thread
-  };
+    runInWorker: true,
+    allowedHosts: ['*'],
+    config: configRef.current // Use the current config from ref
+  });
   
   // Create a ref to store the latest servlets data
   const servletsRef = useRef(servlets);
@@ -430,6 +565,11 @@ export default function McpRunnerPlugin(): JSX.Element {
       setIsProcessing(false);
       return;
     }
+
+    // Get the current WasmExecutor options with latest config
+    const wasmExecutorOptions = getWasmExecutorOptions();
+    console.log('Config being used for WASM executor:', wasmExecutorOptions.config);
+
     
     // Get content address from either meta.lastContentAddress or binding.contentAddress
     const contentAddress = matchingServlet.meta?.lastContentAddress || 
@@ -449,7 +589,8 @@ export default function McpRunnerPlugin(): JSX.Element {
       const wasmBuffer = await fetchWasmContent(contentAddress);
       setWasmContent(wasmBuffer);
       
-      // Create the WASM executor
+      // Create the WASM executor with current options
+      console.log('Creating WASM executor with options:', wasmExecutorOptions);
       const executor = await createWasmExecutorFromBuffer(wasmBuffer, wasmExecutorOptions);
       
       // Add a small delay to allow initialization to complete
@@ -460,7 +601,6 @@ export default function McpRunnerPlugin(): JSX.Element {
         slug: servletSlug,
         contentAddress,
         functionName: 'call',
-        config: {},
         meta: matchingServlet.meta
       };
       
@@ -825,6 +965,29 @@ Make sure to properly escape any special characters in the content string. Retur
   return (
     <div>
       <button 
+        onClick={() => setShowConfig(!showConfig)}
+        style={{
+          ...styles.button,
+          position: 'fixed',
+          top: '175px', // Position below the servlets button (125px + 40px height + 10px gap)
+          right: '20px',
+          zIndex: 100,
+          backgroundColor: '#ffffff',
+          boxShadow: '0px 1px 5px rgba(0, 0, 0, 0.3)',
+          width: '40px',
+          height: '40px',
+          borderRadius: '20px',
+          padding: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        title="Configure"
+        className="toolbar-item"
+      >
+        <i className="settings" />
+      </button>
+      <button 
         onClick={handleRunMcp}
         disabled={isProcessing}
         style={isProcessing ? {...styles.button, ...styles.buttonDisabled} : styles.button}
@@ -834,6 +997,13 @@ Make sure to properly escape any special characters in the content string. Retur
       Run Tiles  <img src="/icon.png" alt="Run Icon" style={{height: '1em', width: '1em', verticalAlign: 'middle', marginRight: '0.45em', marginLeft: '0.45em'}} />
       </button>
       {wasmError && <div style={styles.error}>{wasmError}</div>}
+      {showConfig && (
+        <ConfigPanel
+          onClose={() => setShowConfig(false)}
+          config={config}
+          onConfigChange={setConfig}
+        />
+      )}
     </div>
   );
 }
