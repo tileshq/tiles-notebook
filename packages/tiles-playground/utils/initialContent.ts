@@ -66,7 +66,7 @@ export function $prepopulatedRichText() {
     const paragraph5 = $createParagraphNode();
     paragraph5.append(
       $createTextNode('Then, put the cursor on the above line, and click on the robot icon to ask the agent to run it. '),
-      $createTextNode('To share this tiles, use the airplane icon in the top-right corner.'),
+      $createTextNode('To share this document, use the airplane icon in the top-right corner.'),
     );
     root.append(paragraph5);
 
@@ -79,7 +79,7 @@ export function $prepopulatedRichText() {
     const paragraph6  = $createParagraphNode();
     paragraph6.append(
       $createTextNode('We\'re constantly refining and adding new features, checkout our '),
-      $createLinkNode('https://tiles.run/shared/5eZsvYNcG3CmgMVKJACZC').append(
+      $createLinkNode('https://tiles.run/shared/eT-8MxjB2FuxMvMalB4Dy').append(
         $createTextNode('changelog.')
       ),
 
