@@ -218,8 +218,8 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
           padding: '20px',
           textAlign: 'center',
         }}>
-        <p>A new notebook for making personal software.</p>
-        <p>Technically it&apos;s a local-first, multiplayer enabled MCP client with notebook interface.</p>
+        <p>Tiles is a new notebook for making personal software.</p>
+        <p>Technically it&apos;s a local-first MCP client with notebook interface.</p>
         <p>
           Check out{' '}
           <a
@@ -229,7 +229,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
             style={{color: '#007bff', textDecoration: 'none'}}>
             Tilekit
           </a>{' '}
-          for the underlying personal software framework.
+          for the underlying personal software toolkit.
         </p>
       </footer>
     </>

@@ -31,7 +31,7 @@ export function $prepopulatedRichText() {
     // Add second paragraph
     const paragraph2 = $createParagraphNode();
     paragraph2.append(
-      $createTextNode('Technically it\'s a local-first, shareable, MCP client with a notebook interface.'),
+      $createTextNode('Technically it\'s a local-first MCP client with a notebook interface.'),
       $createTextNode(' To run MCP servers as agents, type \'@\' or click on the menu on the right, and talk to them in natural language.')
     );
     root.append(paragraph2);
@@ -65,7 +65,7 @@ export function $prepopulatedRichText() {
     // Add a paragraph with text
     const paragraph5 = $createParagraphNode();
     paragraph5.append(
-      $createTextNode('Then, put the cursor on the above line, and click on the robot icon to ask the agent to run it. '),
+      $createTextNode('Then, place the cursor on the line above, and click the \`Run Tiles\` button to have the agent process it. '),
       $createTextNode('To share this document, use the airplane icon in the top-right corner.'),
     );
     root.append(paragraph5);
@@ -79,7 +79,7 @@ export function $prepopulatedRichText() {
     const paragraph6  = $createParagraphNode();
     paragraph6.append(
       $createTextNode('We\'re constantly refining and adding new features, checkout our '),
-      $createLinkNode('https://tiles.run/shared/eT-8MxjB2FuxMvMalB4Dy').append(
+      $createLinkNode('https://tiles.run/shared/mWGnrJAefk-pVkcRGgFss').append(
         $createTextNode('changelog.')
       ),
 
