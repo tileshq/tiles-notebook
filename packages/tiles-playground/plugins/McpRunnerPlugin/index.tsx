@@ -596,34 +596,26 @@ export default function McpRunnerPlugin(): JSX.Element {
       // Add a small delay to allow initialization to complete
       await new Promise(resolve => setTimeout(resolve, 250));
       
-      // Prepare the servlet tool information
-      const servletInfo: ServletInfo = {
-        slug: servletSlug,
-        contentAddress,
-        functionName: 'call',
-        meta: matchingServlet.meta
-      };
       
-      // Create the tool definition for Claude
-      const tool: ServletTool = {
-        name: (matchingServlet.name || servletSlug).split('/')[1] || matchingServlet.name || servletSlug,
-        description: (matchingServlet.meta?.schema as any)?.description || `Execute the ${servletSlug} servlet`,
-        inputSchema: {}, // We'll fill this from the servlet metadata if available
-        servletSlug
-      };
-      
-      // Format the tools for Claude API
-      const claudeTools = [{
-        name: tool.name,
-        description: tool.description,
-        input_schema: {
-          type: "object",
-          properties: {
-            ...(matchingServlet.meta?.schema?.tools?.[0]?.inputSchema?.properties || {})
-          },
-          required: []
-        }
-      }];
+          // Extract all available tools from the servlet schema
+    const availableTools = matchingServlet.meta?.schema?.tools || [];
+    
+    if (availableTools.length === 0) {
+      setWasmError(`No tools found in servlet "${servletSlug}"`);
+      setIsProcessing(false);
+      return;
+    }
+    
+    // Format all tools for Claude API
+    const claudeTools = availableTools.map(tool => ({
+      name: tool.name,
+      description: tool.description,
+      input_schema: {
+        type: "object",
+        properties: tool.inputSchema?.properties || {},
+        required: tool.inputSchema?.required || []
+      }
+    }));
       
       // --- Artifact System Prompt ---
       // Prepare a system message to instruct Claude about artifact formats
