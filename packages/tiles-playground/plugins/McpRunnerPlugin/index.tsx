@@ -622,32 +622,77 @@ export default function McpRunnerPlugin(): JSX.Element {
       const artifactSystemMessage: Message = {
         role: 'system',
         content: `When generating visual content such as diagrams, charts, HTML, or formatted content, please respond with a JSON object that follows this structure:
-{
-  "type": "artifact",
-  "contentType": "application/vnd.ant.html" | "text/markdown" | "application/vnd.ant.mermaid",
-  "content": "your content here"
-}
-
-For contentType:
-- Use "application/vnd.ant.html" for HTML content
-- Use "text/markdown" for Markdown formatted text
-- Use "application/vnd.ant.mermaid" for Mermaid diagram syntax
-
-Example for Mermaid:
-{
-  "type": "artifact",
-  "contentType": "application/vnd.ant.mermaid",
-  "content": "graph TD;\\n    A-->B;\\n    A-->C;\\n    B-->D;\\n    C-->D;"
-}
-
-Example for HTML:
-{
-  "type": "artifact",
-  "contentType": "application/vnd.ant.html",
-  "content": "<div style=\"font-family: Arial, sans-serif; padding: 20px;\">\n  <h1 style=\"color: #333;\">Hello World</h1>\n  <p>This is an example of HTML content.</p>\n  <p>This paragraph demonstrates proper HTML structure for line breaks.</p>\n  <ul>\n    <li>Item 1</li>\n    <li>Item 2</li>\n  </ul>\n  <p>For explicit line breaks, use <br> tags like this:<br>This is on a new line</p>\n</div>"
-}
-
-Make sure to properly escape any special characters in the content string. Return this JSON object as a complete message without any additional explanation or wrapping.`
+      {
+        "type": "artifact",
+        "contentType": "application/vnd.ant.html" | "text/markdown" | "application/vnd.ant.mermaid",
+        "content": "your content here"
+      }
+      
+      Content type selection:
+      - Diagrams, flowcharts, mind maps → "application/vnd.ant.mermaid"
+      - Interactive web content, styled text → "application/vnd.ant.html"
+      - Documentation, notes, plain formatted text → "text/markdown"
+      - When unclear, prefer Mermaid for diagrams and HTML for everything else
+      
+      When asked to create any diagram, flowchart, or visual representation:
+      - Default to Mermaid syntax unless specifically asked for another format
+      - Use "application/vnd.ant.mermaid" as the contentType
+      - Include proper Mermaid syntax with correct node definitions and connections
+      
+      Content escaping rules:
+      - For JSON strings: escape backslashes (\\\\), quotes (\\"), newlines (\\n), tabs (\\t)
+      - For HTML: escape < as &lt;, > as &gt;, & as &amp;
+      - For Mermaid: use double backslashes for line breaks (\\\\n)
+      - Always validate that the JSON structure remains valid after escaping
+      
+      Common mistakes to avoid:
+      - Never mix artifact types (e.g., HTML inside Mermaid)
+      - Always close all HTML tags properly
+      - Ensure Mermaid syntax follows proper node naming (no spaces in node IDs)
+      - Test that all escape sequences maintain valid JSON
+      
+      For code artifacts:
+      - Use HTML with <pre><code> tags for syntax highlighting
+      - Include proper indentation using spaces (not tabs)
+      - Escape all HTML entities within code blocks
+      - Consider adding inline CSS for basic code styling
+      
+      Examples:
+      
+      Mermaid diagram:
+      {
+        "type": "artifact",
+        "contentType": "application/vnd.ant.mermaid",
+        "content": "graph TD\\n    A[Start Process]-->B{Decision Point}\\n    B-->|Yes| C[Action 1]\\n    B-->|No| D[Action 2]\\n    C-->E[End]\\n    D-->E"
+      }
+      
+      HTML with special characters:
+      {
+        "type": "artifact",
+        "contentType": "application/vnd.ant.html",
+        "content": "<div style=\\"font-family: Arial, sans-serif; padding: 20px;\\">\\n    <h1>Title with &quot;quotes&quot;</h1>\\n    <p>First line<br>\\n    Second line with &amp; symbol</p>\\n    <ul>\\n        <li>Item 1</li>\\n        <li>Item 2</li>\\n    </ul>\\n</div>"
+      }
+      
+      Markdown:
+      {
+        "type": "artifact",
+        "contentType": "text/markdown",
+        "content": "# Heading\\n\\n## Subheading\\n\\n- Bullet point 1\\n- Bullet point 2\\n\\n**Bold text** and *italic text*"
+      }
+      
+      Before returning the JSON:
+      1. Verify the JSON structure is valid
+      2. Check that content string has proper escaping
+      3. Ensure contentType matches the actual content format
+      4. Confirm no mixing of different content types
+      
+      IMPORTANT: Return ONLY the JSON object. Do not include:
+      - Markdown code blocks (\`\`\`json)
+      - Explanatory text before or after
+      - Additional formatting or wrapper elements
+      - Any text outside the JSON structure
+      
+      The response must start with { and end with }`
       };
 
       // Start the conversation with the initial message
