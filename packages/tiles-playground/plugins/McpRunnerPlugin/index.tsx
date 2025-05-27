@@ -324,7 +324,10 @@ function ConfigPanel({
             <input
               type="checkbox"
               checked={runOnServer}
-              onChange={(e) => onRunOnServerChange(e.target.checked)}
+              onChange={(e) => {
+                console.log('Server execution toggle changed to:', e.target.checked);
+                onRunOnServerChange(e.target.checked);
+              }}
             />
             Run on server (avoids CORS issues)
           </label>
@@ -373,14 +376,28 @@ export default function McpRunnerPlugin(): JSX.Element {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [runOnServer, setRunOnServer] = useState(false);
   
+  // Debug: Track runOnServer state changes
+  useEffect(() => {
+    console.log('runOnServer state changed to:', runOnServer);
+  }, [runOnServer]);
+  
   // Create a ref to store the latest config
   const configRef = useRef(config);
+  
+  // Create a ref to store the latest runOnServer state
+  const runOnServerRef = useRef(runOnServer);
   
   // Update configRef whenever config changes
   useEffect(() => {
     configRef.current = config;
     console.log('Config updated in McpRunnerPlugin:', config);
   }, [config]);
+  
+  // Update runOnServerRef whenever runOnServer changes
+  useEffect(() => {
+    runOnServerRef.current = runOnServer;
+    console.log('runOnServer updated in ref:', runOnServer);
+  }, [runOnServer]);
   
   // Configuration options for WasmExecutor - moved inside processCurrentSelection
   const getWasmExecutorOptions = (): WasmExecutorOptions => ({
@@ -472,8 +489,8 @@ export default function McpRunnerPlugin(): JSX.Element {
               '/data': '/data'
             },
             logLevel: 'debug',
-            runInWorker: false,
-            allowedHosts: ['*']
+            runInWorker: false
+            // Note: allowedHosts is omitted because it requires runInWorker: true
           }
         }),
       });
@@ -656,12 +673,12 @@ export default function McpRunnerPlugin(): JSX.Element {
     }
     
     // Insert initial message to show processing
-    insertTextAfterNode(mcpServerNode, `Processing request: "${finalPrompt}"...`);
+    insertTextAfterNode(mcpServerNode, `Processing request: "${finalPrompt}"... (${runOnServerRef.current ? 'Server' : 'Local'} Execution)`);
     
     try {
       // Only fetch WASM content and create executor if running locally
       let executor: WasmExecutor | null = null;
-      if (!runOnServer) {
+      if (!runOnServerRef.current) {
         // Fetch WASM content
         const wasmBuffer = await fetchWasmContent(contentAddress);
         setWasmContent(wasmBuffer);
@@ -930,9 +947,13 @@ export default function McpRunnerPlugin(): JSX.Element {
             //console.log(`Executing tool ${name} with input:`, servletInput);
             
             // Execute the servlet using either server or local execution
+            const useServerExecution = runOnServerRef.current;
+            console.log('Tool execution mode:', useServerExecution ? 'Server' : 'Local');
             let executionResult;
-            if (runOnServer) {
+            if (useServerExecution) {
               // Execute on server
+              console.log('Executing on server with contentAddress:', contentAddress);
+              insertTextAfterNode(mcpServerNode, `🌐 Executing ${name} on server...`);
               executionResult = await executeWasmOnServer(
                 contentAddress,
                 'call',
@@ -941,6 +962,8 @@ export default function McpRunnerPlugin(): JSX.Element {
               );
             } else {
               // Execute locally using the plugin
+              console.log('Executing locally');
+              insertTextAfterNode(mcpServerNode, `💻 Executing ${name} locally...`);
               if (!executor) {
                 throw new Error('Local executor not initialized');
               }
