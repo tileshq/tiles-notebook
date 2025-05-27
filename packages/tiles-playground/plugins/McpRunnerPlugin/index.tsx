@@ -6,7 +6,7 @@ import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR,
 import { $createHorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useMcpContext } from '@/contexts/McpContext';
 import { CSSProperties } from 'react';
-import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions } from '../../lib/wasm-executor';
+import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions, WasmExecutor } from '../../lib/wasm-executor';
 import { $createArtifactNode, $isArtifactNode, ArtifactContentType } from '../../nodes/ArtifactNode';
 import { $setSelection } from 'lexical';
 
@@ -231,10 +231,14 @@ function ConfigPanel({
   onClose,
   config,
   onConfigChange,
+  runOnServer,
+  onRunOnServerChange,
 }: {
   onClose: () => void;
   config: Record<string, string>;
   onConfigChange: (newConfig: Record<string, string>) => void;
+  runOnServer: boolean;
+  onRunOnServerChange: (runOnServer: boolean) => void;
 }): JSX.Element {
   const [keyValuePairs, setKeyValuePairs] = useState<Array<{key: string; value: string}>>(
     Object.entries(config).length > 0 
@@ -315,6 +319,16 @@ function ConfigPanel({
         </button>
       </div>
       <div className="config-panel-content">
+        <div className="config-option">
+          <label>
+            <input
+              type="checkbox"
+              checked={runOnServer}
+              onChange={(e) => onRunOnServerChange(e.target.checked)}
+            />
+            Run on server (avoids CORS issues)
+          </label>
+        </div>
         <p>Add key-value pairs for your configuration.</p>
         {keyValuePairs.map((pair, index) => (
           <div key={index} className="config-pair">
@@ -357,6 +371,7 @@ export default function McpRunnerPlugin(): JSX.Element {
   const [executionResult, setExecutionResult] = useState<WasmExecutorResult | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [config, setConfig] = useState<Record<string, string>>({});
+  const [runOnServer, setRunOnServer] = useState(false);
   
   // Create a ref to store the latest config
   const configRef = useRef(config);
@@ -431,6 +446,65 @@ export default function McpRunnerPlugin(): JSX.Element {
       });
   };
   // --- End Insert Artifact Node ---
+
+  // Function to execute WASM on server
+  const executeWasmOnServer = async (
+    contentAddress: string,
+    functionName: string,
+    input: string,
+    config: Record<string, string>
+  ) => {
+    try {
+      const response = await fetch('/api/wasm-execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contentAddress,
+          functionName,
+          input,
+          config,
+          executorOptions: {
+            useWasi: true,
+            allowedPaths: {
+              '/tmp': '/tmp',
+              '/data': '/data'
+            },
+            logLevel: 'debug',
+            runInWorker: false,
+            allowedHosts: ['*']
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || 'Failed to execute WASM on server');
+        } catch (parseError) {
+          throw new Error(`Failed to execute WASM on server: ${errorText}`);
+        }
+      }
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      return {
+        output: result.output,
+        error: undefined
+      };
+    } catch (error) {
+      console.error('Error executing WASM on server:', error);
+      return {
+        output: '',
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  };
 
   // Make request to the Next.js API
   const callClaudeApi = async (messages: Message[], tools: any[]) => {
@@ -585,16 +659,20 @@ export default function McpRunnerPlugin(): JSX.Element {
     insertTextAfterNode(mcpServerNode, `Processing request: "${finalPrompt}"...`);
     
     try {
-      // Fetch WASM content
-      const wasmBuffer = await fetchWasmContent(contentAddress);
-      setWasmContent(wasmBuffer);
-      
-      // Create the WASM executor with current options
-      console.log('Creating WASM executor with options:', wasmExecutorOptions);
-      const executor = await createWasmExecutorFromBuffer(wasmBuffer, wasmExecutorOptions);
-      
-      // Add a small delay to allow initialization to complete
-      await new Promise(resolve => setTimeout(resolve, 250));
+      // Only fetch WASM content and create executor if running locally
+      let executor: WasmExecutor | null = null;
+      if (!runOnServer) {
+        // Fetch WASM content
+        const wasmBuffer = await fetchWasmContent(contentAddress);
+        setWasmContent(wasmBuffer);
+        
+        // Create the WASM executor with current options
+        console.log('Creating WASM executor with options:', wasmExecutorOptions);
+        executor = await createWasmExecutorFromBuffer(wasmBuffer, wasmExecutorOptions);
+        
+        // Add a small delay to allow initialization to complete
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
       
       
           // Extract all available tools from the servlet schema
@@ -851,8 +929,23 @@ export default function McpRunnerPlugin(): JSX.Element {
             
             //console.log(`Executing tool ${name} with input:`, servletInput);
             
-            // Execute the servlet using the plugin
-            const executionResult = await executor.execute('call', servletInput);
+            // Execute the servlet using either server or local execution
+            let executionResult;
+            if (runOnServer) {
+              // Execute on server
+              executionResult = await executeWasmOnServer(
+                contentAddress,
+                'call',
+                servletInput,
+                configRef.current
+              );
+            } else {
+              // Execute locally using the plugin
+              if (!executor) {
+                throw new Error('Local executor not initialized');
+              }
+              executionResult = await executor.execute('call', servletInput);
+            }
             setExecutionResult(executionResult);
             
             if (executionResult.error) {
@@ -945,7 +1038,7 @@ export default function McpRunnerPlugin(): JSX.Element {
       
       //console.log(`Conversation complete.`);
       
-      // Clean up the executor
+      // Clean up the executor if it was created
       if (executor) {
         await executor.free();
       }
@@ -1039,6 +1132,8 @@ export default function McpRunnerPlugin(): JSX.Element {
           onClose={() => setShowConfig(false)}
           config={config}
           onConfigChange={setConfig}
+          runOnServer={runOnServer}
+          onRunOnServerChange={setRunOnServer}
         />
       )}
     </div>
