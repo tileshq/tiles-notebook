@@ -82,6 +82,7 @@ For inquiries about building personal software quickly and influencing the futur
 - [Github](https://github.com/tileshq/)
 - [X/Twitter](https://x.com/tilesnotebook)
 - [Changelog](https://tiles.run/shared/mWGnrJAefk-pVkcRGgFss)
+- [Handbook](https://tileshq.notion.site/)
 - [Terms](https://tiles.run/shared/RYcEAFb16btn8a7SKx3bV)
 
 ## License
