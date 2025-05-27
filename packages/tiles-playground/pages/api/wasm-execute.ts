@@ -48,20 +48,40 @@ export default async function handler(
     const serverExecutorOptions: WasmExecutorOptions = {
       useWasi: true,
       allowedPaths: {
+        // Try common temporary directories that might exist
         '/tmp': '/tmp',
-        '/data': '/data'
+        '/var/tmp': '/var/tmp',
+        // Note: These will be filtered by the WasmExecutor to only include accessible paths
       },
       logLevel: 'debug',
       runInWorker: false, // Server-side doesn't need worker threads
-      allowedHosts: ['*'],
+      // Note: allowedHosts requires runInWorker: true, so we omit it for server execution
       config,
       ...executorOptions
     };
 
+    // Remove allowedHosts if runInWorker is false
+    if (!serverExecutorOptions.runInWorker) {
+      delete serverExecutorOptions.allowedHosts;
+    }
+
     // Create executor
-    const executor = await createWasmExecutorFromBuffer(wasmBuffer, serverExecutorOptions);
+    // console.log('Creating WASM executor with options:', serverExecutorOptions);
+    let executor;
+    try {
+      executor = await createWasmExecutorFromBuffer(wasmBuffer, serverExecutorOptions);
+      
+      if (!executor) {
+        throw new Error('Failed to create WASM executor');
+      }
+      // console.log('WASM executor created successfully');
+    } catch (initError) {
+      console.error('Error creating WASM executor:', initError);
+      throw new Error(`Failed to initialize WASM executor: ${initError instanceof Error ? initError.message : String(initError)}`);
+    }
     
     // Execute with timeout
+    // console.log(`Executing function ${functionName} with input:`, input.substring(0, 100) + '...');
     const result = await Promise.race([
       executor.execute(functionName, input),
       new Promise<never>((_, reject) => 

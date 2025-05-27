@@ -24,9 +24,16 @@ export function isSharedArrayBufferAvailable(): boolean {
 export class WasmExecutor {
   private plugin: any;
 
-  constructor(wasmBuffer: ArrayBuffer, options: WasmExecutorOptions = {}) {
+  // Make constructor private to force use of static factory methods
+  private constructor() {
     this.plugin = null;
-    this.initialize(wasmBuffer, options);
+  }
+
+  // Static factory method that properly handles async initialization
+  static async create(wasmBuffer: ArrayBuffer, options: WasmExecutorOptions = {}): Promise<WasmExecutor> {
+    const executor = new WasmExecutor();
+    await executor.initialize(wasmBuffer, options);
+    return executor;
   }
 
   private async initialize(wasmBuffer: ArrayBuffer, options: WasmExecutorOptions): Promise<void> {
@@ -42,8 +49,35 @@ export class WasmExecutor {
       pluginOptions.allowedHosts = options.allowedHosts;
     }
 
+    // Handle allowed paths more carefully for server environments
     if (options.allowedPaths && Object.keys(options.allowedPaths).length > 0) {
-      pluginOptions.allowedPaths = options.allowedPaths;
+      // On server-side, be more conservative with paths
+      if (typeof window === 'undefined') {
+        // Server-side: only allow paths that actually exist
+        const fs = await import('fs');
+        const filteredPaths: Record<string, string> = {};
+        
+        for (const [hostPath, guestPath] of Object.entries(options.allowedPaths)) {
+          try {
+            // Check if the host path exists and is accessible
+            await fs.promises.access(hostPath, fs.constants.F_OK);
+            filteredPaths[hostPath] = guestPath;
+            // console.log(`WASI path allowed: ${hostPath} -> ${guestPath}`);
+          } catch (error) {
+            // console.warn(`WASI path skipped (not accessible): ${hostPath} -> ${guestPath}`);
+          }
+        }
+        
+        if (Object.keys(filteredPaths).length > 0) {
+          pluginOptions.allowedPaths = filteredPaths;
+        } else {
+          // console.log('No accessible WASI paths found, disabling WASI');
+          pluginOptions.useWasi = false;
+        }
+      } else {
+        // Client-side: use paths as provided
+        pluginOptions.allowedPaths = options.allowedPaths;
+      }
     }
 
     // Set up logging if logLevel is provided
@@ -52,16 +86,46 @@ export class WasmExecutor {
       pluginOptions.logLevel = options.logLevel;
     }
 
-    console.log('Initializing WASM plugin with options:', pluginOptions);
-    this.plugin = await createPlugin(wasmBuffer, pluginOptions);
-    console.debug('WASM plugin initialized successfully');
+    // console.log('Initializing WASM plugin with options:', pluginOptions);
+    
+    try {
+      this.plugin = await createPlugin(wasmBuffer, pluginOptions);
+      // console.debug('WASM plugin initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize WASM plugin:', error);
+      
+      // If WASI initialization failed, try without WASI
+      if (pluginOptions.useWasi) {
+        // console.log('Retrying WASM initialization without WASI...');
+        const fallbackOptions = { ...pluginOptions };
+        delete fallbackOptions.allowedPaths;
+        fallbackOptions.useWasi = false;
+        
+        try {
+          this.plugin = await createPlugin(wasmBuffer, fallbackOptions);
+          // console.log('WASM plugin initialized successfully without WASI');
+        } catch (fallbackError) {
+          console.error('Failed to initialize WASM plugin even without WASI:', fallbackError);
+          throw fallbackError;
+        }
+      } else {
+        throw error;
+      }
+    }
   }
 
   async execute(functionName: string, input: string): Promise<WasmExecutorResult> {
+    if (!this.plugin) {
+      return {
+        output: '',
+        error: 'WASM plugin not initialized'
+      };
+    }
+
     try {
-      console.debug(`Executing WASM function: ${functionName}`);
+      // console.debug(`Executing WASM function: ${functionName}`);
       const outputBuffer = await this.plugin.call(functionName, input);
-      console.debug(`WASM function ${functionName} executed successfully`);
+      // console.debug(`WASM function ${functionName} executed successfully`);
       return {
         output: outputBuffer?.text() || ''
       };
@@ -88,7 +152,7 @@ export async function createWasmExecutorFromFile(
   options: WasmExecutorOptions = {}
 ): Promise<WasmExecutor> {
   const arrayBuffer = await file.arrayBuffer();
-  return new WasmExecutor(arrayBuffer, options);
+  return WasmExecutor.create(arrayBuffer, options);
 }
 
 // Helper function to create a WASM executor from a buffer
@@ -96,5 +160,5 @@ export async function createWasmExecutorFromBuffer(
   buffer: ArrayBuffer,
   options: WasmExecutorOptions = {}
 ): Promise<WasmExecutor> {
-  return new WasmExecutor(buffer, options);
+  return WasmExecutor.create(buffer, options);
 } 
