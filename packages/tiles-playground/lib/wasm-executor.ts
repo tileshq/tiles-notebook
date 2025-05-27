@@ -35,7 +35,8 @@ export class WasmExecutor {
       config: options.config || {},
     };
     
-    pluginOptions.runInWorker = true;
+    // Use the provided runInWorker option, defaulting to true for client-side
+    pluginOptions.runInWorker = options.runInWorker ?? (typeof window !== 'undefined');
 
     if (options.allowedHosts?.length) {
       pluginOptions.allowedHosts = options.allowedHosts;
