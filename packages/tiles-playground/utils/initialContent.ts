@@ -20,7 +20,7 @@ export function $prepopulatedRichText() {
     // Add first paragraph
     const paragraph1 = $createParagraphNode();
     paragraph1.append(
-      $createTextNode('It\'s a new notebook interface for making personal software.')
+      $createTextNode('Tiles is a notebook interface that makes working with AI agents easier. It\'s a multiplayer, offline-first expereince based on MCP with support for generating widgets/artifacts.')
     );
     root.append(paragraph1);
 
@@ -31,8 +31,7 @@ export function $prepopulatedRichText() {
     // Add second paragraph
     const paragraph2 = $createParagraphNode();
     paragraph2.append(
-      $createTextNode('Technically it\'s a local-first MCP client with a notebook interface.'),
-      $createTextNode(' To run MCP servers as agents, type \'@\' or click on the menu on the right, and talk to them in natural language.')
+      $createTextNode('Our vision is to make personal software ubiquitous in the future.')
     );
     root.append(paragraph2);
 

@@ -1,6 +1,6 @@
 # Tiles Notebook
 
-A new notebook interface for making personal software. Technicaly it's a local-first MCP client with notebook interface.
+Tiles is a notebook interface that makes working with AI agents easier. It's a multiplayer, offline-first expereince based on MCP with support for generating widgets/artifacts. Our vision is to make personal software ubiquitous in the future.
 
 ## Project Structure
 
