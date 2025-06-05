@@ -78,8 +78,8 @@ export function $prepopulatedRichText() {
     const paragraph6  = $createParagraphNode();
     paragraph6.append(
       $createTextNode('We\'re constantly refining and adding new features, checkout our '),
-      $createLinkNode('https://tiles.run/shared/mWGnrJAefk-pVkcRGgFss').append(
-        $createTextNode('changelog.')
+      $createLinkNode('https://blog.tiles.run/').append(
+        $createTextNode('blog.')
       ),
 
     );

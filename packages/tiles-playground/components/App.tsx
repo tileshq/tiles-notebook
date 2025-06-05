@@ -160,7 +160,7 @@ function App(): JSX.Element {
         {' • '}
           <a href="https://x.com/tilesnotebook" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>X/Twitter</a>
           {' • '}
-          <a href="https://tiles.run/shared/mWGnrJAefk-pVkcRGgFss" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Changelog</a>
+          <a href="https://blog.tiles.run/" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Blog</a>
           {' • '}
           <a href="https://tileshq.notion.site/" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Handbook</a>
           {' • '}
