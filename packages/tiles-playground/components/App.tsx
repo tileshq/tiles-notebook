@@ -169,6 +169,9 @@ function App(): JSX.Element {
         <p>
           Check out <a href="https://tilekit.dev" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>Tilekit</a> for the underlying personal software toolkit.
         </p>
+        <p>
+          Designed and built by <a href="https://ankeshbharti.com" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>@feynon</a> and <a href="https://aswinc.blog" target="_blank" rel="noreferrer" style={{color: '#007bff', textDecoration: 'none'}}>@chandanaveli</a>.
+        </p>
       </footer>
     </LexicalComposer>
   );
