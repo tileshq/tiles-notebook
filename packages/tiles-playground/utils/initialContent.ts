@@ -42,7 +42,7 @@ export function $prepopulatedRichText() {
     // Add a paragraph with some text
     const paragraph3 = $createParagraphNode();
     paragraph3.append(
-      $createTextNode('For example, you can ask:')
+      $createTextNode('For example, you can write:')
     );
     root.append(paragraph3);
 
@@ -54,7 +54,7 @@ export function $prepopulatedRichText() {
     const paragraph4 = $createParagraphNode();
     const mentionNode = $createMentionNode('dylibso/eval-py');
     paragraph4.append(mentionNode);
-    paragraph4.append($createTextNode(' My current left balance and financial analysis: Balance As of 5th April Bank: 87150 Credit debt (ICICI+HDFC+AXIS): 47504 + 35000 + 25732 ,  Splitwise debt: -261295. Draw a diagram to show how my money was spent and how much is left.'));
+    paragraph4.append($createTextNode(' My current left balance and financial analysis: Balance As of 5th April Bank: 87150 Credit debt (ICICI+HDFC+AXIS): 47504 + 35000 + 25732 ,  Splitwise debt: -261295. An analysis and a diagram to show how my money was spent and how much is left.'));
     root.append(paragraph4);
 
     // Add a horizontal line
