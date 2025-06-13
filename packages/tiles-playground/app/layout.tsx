@@ -4,8 +4,8 @@ import './globals.css';
 import { McpProvider } from '../contexts/McpContext';
 
 export const metadata: Metadata = {
-  title: 'Tiles: A new notebook for making personal software',
-  description: 'A new notebook for making personal software',
+  title: 'Tiles Notebook | Note Taking Tool With AI agents',
+  description: 'Tiles is a notebook interface that makes working with AI agents easier. It\'s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.',
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     shortcut: ['/favicon.ico'],
   },
   openGraph: {
-    title: 'Tiles: A new notebook for making personal software',
-    description: 'A new notebook for making personal software',    
+    title: 'Tiles Notebook | Note Taking Tool With AI agents',
+    description: 'Tiles is a notebook interface that makes working with AI agents easier. It\'s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.',    
     images: [
       {
         url: '/api/og', // This should point to your OpenGraph route

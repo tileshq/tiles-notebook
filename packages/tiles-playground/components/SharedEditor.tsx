@@ -218,8 +218,8 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
           padding: '20px',
           textAlign: 'center',
         }}>
-        <p>Tiles is a new notebook for making personal software.</p>
-        <p>Technically it&apos;s a local-first MCP client with notebook interface.</p>
+        <p>Tiles is a notebook interface that makes working with AI agents easier.</p>
+        <p>It&apos;s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.</p>
         <p>
           Check out{' '}
           <a
