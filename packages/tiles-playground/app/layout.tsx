@@ -4,7 +4,7 @@ import './globals.css';
 import { McpProvider } from '../contexts/McpContext';
 
 export const metadata: Metadata = {
-  title: 'Tiles Notebook | Note Taking Tool With AI agents',
+  title: 'Tiles Notebook | Note Taking Tool With AI Agents',
   description: 'Tiles is a notebook interface that makes working with AI agents easier. It\'s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.',
   icons: {
     icon: [
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     shortcut: ['/favicon.ico'],
   },
   openGraph: {
-    title: 'Tiles Notebook | Note Taking Tool With AI agents',
+    title: 'Tiles Notebook | Note Taking Tool With AI Agents',
     description: 'Tiles is a notebook interface that makes working with AI agents easier. It\'s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.',    
     images: [
       {
