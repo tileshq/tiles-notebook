@@ -1,0 +1,175 @@
+.artifact-container {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  position: relative;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.artifact-container:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-button {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #64748b;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-button:hover {
+  background-color: #f8fafc;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.code-block {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.mermaid-container {
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  overflow: auto;
+}
+
+.html-container {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.html-container iframe {
+  width: 100%;
+  height: 500px;
+  border: none;
+  background-color: #ffffff;
+}
+
+.markdown-container {
+  color: #334155;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.markdown-container h1,
+.markdown-container h2,
+.markdown-container h3,
+.markdown-container h4,
+.markdown-container h5,
+.markdown-container h6 {
+  color: #1e293b;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.markdown-container p {
+  margin-bottom: 16px;
+}
+
+.markdown-container code {
+  background-color: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.9em;
+}
+
+.markdown-container pre {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.markdown-container pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.markdown-container blockquote {
+  border-left: 4px solid #e2e8f0;
+  margin: 16px 0;
+  padding: 8px 16px;
+  color: #64748b;
+  background-color: #f8fafc;
+}
+
+.markdown-container ul,
+.markdown-container ol {
+  padding-left: 24px;
+  margin: 16px 0;
+}
+
+.markdown-container table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 16px 0;
+}
+
+.markdown-container th,
+.markdown-container td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.markdown-container th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}
+
+/* Scrollbar styling */
+.code-block::-webkit-scrollbar,
+.markdown-container pre::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.code-block::-webkit-scrollbar-track,
+.markdown-container pre::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.code-block::-webkit-scrollbar-thumb,
+.markdown-container pre::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.code-block::-webkit-scrollbar-thumb:hover,
+.markdown-container pre::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+} 
