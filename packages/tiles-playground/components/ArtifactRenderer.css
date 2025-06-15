@@ -13,6 +13,27 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.artifact-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.artifact-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.25;
+}
+
+.artifact-description {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
 .toggle-button {
   position: absolute;
   top: -12px;

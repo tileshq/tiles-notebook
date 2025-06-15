@@ -94,108 +94,122 @@ function isValidArtifact(obj: any): obj is ArtifactStructure {
     return isValid;
 }
 
-// Function to extract and parse artifact JSON from text
+// Function to extract and parse artifact from the new structured format
 function extractArtifactFromText(text: string): ArtifactStructure | null {
   try {
-    // First try to parse the entire text as JSON
-    try {
-      const parsed = JSON.parse(text);
-      if (isValidArtifact(parsed)) {
-        return parsed;
-      }
-    } catch (e) {
-      // Not valid JSON, continue with extraction
+    console.log('extractArtifactFromText called with text length:', text.length);
+    console.log('Text preview:', text.substring(0, 300));
+    
+    // Use a simpler approach - find the delimiters with indexOf
+    const startDelimiter = '.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_DELIMITER*}=>-.-.-.-.-.-.-.-.';
+    const endDelimiter = '.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_END*}=>-.-.-.-.-.-.-.-.';
+    
+    console.log('Looking for start delimiter:', startDelimiter);
+    console.log('Looking for end delimiter:', endDelimiter);
+    
+    const startIndex = text.indexOf(startDelimiter);
+    const endIndex = text.indexOf(endDelimiter);
+    
+    console.log('Start delimiter index:', startIndex);
+    console.log('End delimiter index:', endIndex);
+    
+    let artifactMatch = null;
+    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+      const contentStart = startIndex + startDelimiter.length;
+      const artifactContent = text.substring(contentStart, endIndex).trim();
+      console.log('Extracted artifact content:', artifactContent.substring(0, 200));
+      artifactMatch = [null, artifactContent]; // Mimic regex match structure
     }
     
-    // Try to extract JSON using regex
-    const artifactMatch = text.match(/\{[\s\S]*"type":\s*"artifact"[\s\S]*\}/);
-    if (artifactMatch) {
-      const artifactJson = artifactMatch[0];
-      // console.log('Extracted artifact JSON from text:', artifactJson.substring(0, 100) + '...');
+    console.log('Artifact match result:', artifactMatch ? 'FOUND' : 'NOT FOUND');
+    
+    if (!artifactMatch) {
+      console.log('No TILES pattern found, trying fallbacks...');
       
+      // Fallback: try legacy JSON format for backward compatibility
       try {
-        const parsed = JSON.parse(artifactJson);
+        const parsed = JSON.parse(text);
         if (isValidArtifact(parsed)) {
+          console.log('Found valid legacy JSON artifact');
           return parsed;
         }
-      } catch (parseError) {
-        // console.error('Error parsing extracted artifact JSON:', parseError);
+      } catch (e) {
+        // Not a JSON artifact either
+        console.log('Not a valid JSON artifact');
+      }
+      
+      // Another fallback: Look for HTML content directly in the text
+      if (text.includes('<html') || text.includes('<!DOCTYPE html')) {
+        console.log('Found HTML content, trying to extract...');
+        const htmlMatch = text.match(/<html[\s\S]*<\/html>/i) || 
+                          text.match(/<!DOCTYPE html[\s\S]*<\/html>/i) ||
+                          text.match(/<body[\s\S]*<\/body>/i);
         
-        // If parsing failed, try to manually extract the content
-        if (artifactJson.includes('"contentType":') && artifactJson.includes('"content":')) {
-          try {
-            // Extract contentType
-            const contentTypeMatch = artifactJson.match(/"contentType":\s*"([^"]+)"/);
-            const contentType = contentTypeMatch ? contentTypeMatch[1] : null;
-            
-            // Extract content - this is tricky because content might contain quotes and newlines
-            // Find the start of the content
-            const contentStartIndex = artifactJson.indexOf('"content":') + 10;
-            if (contentStartIndex > 10) {
-              // Find the first quote after the content start
-              const firstQuoteIndex = artifactJson.indexOf('"', contentStartIndex);
-              if (firstQuoteIndex > contentStartIndex) {
-                // Find the matching end quote (this is tricky with nested quotes)
-                let endQuoteIndex = -1;
-                let inEscape = false;
-                
-                for (let i = firstQuoteIndex + 1; i < artifactJson.length; i++) {
-                  if (artifactJson[i] === '\\' && !inEscape) {
-                    inEscape = true;
-                  } else if (artifactJson[i] === '"' && !inEscape) {
-                    endQuoteIndex = i;
-                    break;
-                  } else {
-                    inEscape = false;
-                  }
-                }
-                
-                if (endQuoteIndex > firstQuoteIndex) {
-                  const content = artifactJson.substring(firstQuoteIndex + 1, endQuoteIndex);
-                  
-                  // Create a valid artifact object
-                  if (contentType && ['application/vnd.ant.html', 'text/markdown', 'application/vnd.ant.mermaid'].includes(contentType)) {
-                    return {
-                      type: 'artifact',
-                      contentType: contentType as ArtifactContentType,
-                      content: content
-                    };
-                  }
-                }
-              }
-            }
-          } catch (e) {
-            // console.error('Error manually extracting artifact content:', e);
-          }
+        if (htmlMatch) {
+          console.log('Successfully extracted HTML content');
+          return {
+            type: 'artifact',
+            contentType: 'application/vnd.ant.html',
+            content: htmlMatch[0]
+          };
         }
       }
+      
+      console.log('No artifacts found in any format');
+      return null;
     }
     
-    // If we couldn't extract using the above methods, try a more direct approach
-    // Look for HTML content directly in the text
-    if (text.includes('<html') || text.includes('<!DOCTYPE html')) {
-      // console.log('Found HTML content directly in text');
-      
-      // Extract the HTML content
-      const htmlMatch = text.match(/<html[\s\S]*<\/html>/i) || 
-                        text.match(/<!DOCTYPE html[\s\S]*<\/html>/i) ||
-                        text.match(/<body[\s\S]*<\/body>/i);
-      
-      if (htmlMatch) {
-        const htmlContent = htmlMatch[0];
-        // console.log('Extracted HTML content:', htmlContent.substring(0, 100) + '...');
-        
-        return {
-          type: 'artifact',
-          contentType: 'application/vnd.ant.html',
-          content: htmlContent
-        };
+    const artifactContent = artifactMatch[1];
+    
+    // Extract metadata fields
+    const kindMatch = artifactContent.match(/TILES_KIND:\s*(\w+)/);
+    const titleMatch = artifactContent.match(/TILES_TITLE:\s*(.+)/);
+    const descriptionMatch = artifactContent.match(/TILES_DESCRIPTION:\s*(.+)/);
+    
+    // Extract content between TILES_CONTENT_BEGIN and TILES_CONTENT_END
+    const contentMatch = artifactContent.match(
+      /TILES_CONTENT_BEGIN\s*\n([\s\S]*?)\nTILES_CONTENT_END/
+    );
+    
+    if (!kindMatch || !contentMatch) {
+      console.warn('Missing required TILES_KIND or content in artifact');
+      return null;
+    }
+    
+    const kind = kindMatch[1].toLowerCase();
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    const description = descriptionMatch ? descriptionMatch[1].trim() : '';
+    const content = contentMatch[1];
+    
+    // Map kind to contentType
+    let contentType: ArtifactContentType;
+    switch (kind) {
+      case 'html':
+        contentType = 'application/vnd.ant.html';
+        break;
+      case 'markdown':
+        contentType = 'text/markdown';
+        break;
+      case 'mermaid':
+        contentType = 'application/vnd.ant.mermaid';
+        break;
+      default:
+        console.warn(`Unknown artifact kind: ${kind}`);
+        return null;
+    }
+    
+    return {
+      type: 'artifact',
+      contentType,
+      content,
+      metadata: {
+        title,
+        description
       }
-    }
+    };
     
-    return null;
   } catch (e) {
-    // console.error('Error extracting artifact from text:', e);
+    console.error('Error extracting artifact from text:', e);
     return null;
   }
 }
@@ -450,7 +464,7 @@ export default function McpRunnerPlugin(): JSX.Element {
       }
       
       editor.update(() => {
-          const artifactNode = $createArtifactNode(artifact.contentType, artifact.content);
+          const artifactNode = $createArtifactNode(artifact.contentType, artifact.content, artifact.metadata);
           const paragraph = $createParagraphNode(); // Wrap artifact in a paragraph for block behavior
           paragraph.append(artifactNode);
 
@@ -716,78 +730,86 @@ export default function McpRunnerPlugin(): JSX.Element {
       // Prepare a system message to instruct Claude about artifact formats
       const artifactSystemMessage: Message = {
         role: 'system',
-        content: `When generating visual content such as diagrams, charts, HTML, or formatted content, please respond with a JSON object that follows this structure:
-      {
-        "type": "artifact",
-        "contentType": "application/vnd.ant.html" | "text/markdown" | "application/vnd.ant.mermaid",
-        "content": "your content here"
-      }
-      
-      Content type selection:
-      - Diagrams, flowcharts, mind maps → "application/vnd.ant.mermaid"
-      - Interactive web content, styled text → "application/vnd.ant.html"
-      - Documentation, notes, plain formatted text → "text/markdown"
-      - When unclear, prefer Mermaid for diagrams and HTML for everything else
-      
-      When asked to create any diagram, flowchart, or visual representation:
-      - Default to Mermaid syntax unless specifically asked for another format
-      - Use "application/vnd.ant.mermaid" as the contentType
-      - Include proper Mermaid syntax with correct node definitions and connections
-      
-      Content escaping rules:
-      - For JSON strings: escape backslashes (\\\\), quotes (\\"), newlines (\\n), tabs (\\t)
-      - For HTML: escape < as &lt;, > as &gt;, & as &amp;
-      - For Mermaid: use double backslashes for line breaks (\\\\n)
-      - Always validate that the JSON structure remains valid after escaping
-      
-      Common mistakes to avoid:
-      - Never mix artifact types (e.g., HTML inside Mermaid)
-      - Always close all HTML tags properly
-      - Ensure Mermaid syntax follows proper node naming (no spaces in node IDs)
-      - Test that all escape sequences maintain valid JSON
-      
-      For code artifacts:
-      - Use HTML with <pre><code> tags for syntax highlighting
-      - Include proper indentation using spaces (not tabs)
-      - Escape all HTML entities within code blocks
-      - Consider adding inline CSS for basic code styling
-      
-      Examples:
-      
-      Mermaid diagram:
-      {
-        "type": "artifact",
-        "contentType": "application/vnd.ant.mermaid",
-        "content": "graph TD\\n    A[Start Process]-->B{Decision Point}\\n    B-->|Yes| C[Action 1]\\n    B-->|No| D[Action 2]\\n    C-->E[End]\\n    D-->E"
-      }
-      
-      HTML with special characters:
-      {
-        "type": "artifact",
-        "contentType": "application/vnd.ant.html",
-        "content": "<div style=\\"font-family: Arial, sans-serif; padding: 20px;\\">\\n    <h1>Title with &quot;quotes&quot;</h1>\\n    <p>First line<br>\\n    Second line with &amp; symbol</p>\\n    <ul>\\n        <li>Item 1</li>\\n        <li>Item 2</li>\\n    </ul>\\n</div>"
-      }
-      
-      Markdown:
-      {
-        "type": "artifact",
-        "contentType": "text/markdown",
-        "content": "# Heading\\n\\n## Subheading\\n\\n- Bullet point 1\\n- Bullet point 2\\n\\n**Bold text** and *italic text*"
-      }
-      
-      Before returning the JSON:
-      1. Verify the JSON structure is valid
-      2. Check that content string has proper escaping
-      3. Ensure contentType matches the actual content format
-      4. Confirm no mixing of different content types
-      
-      IMPORTANT: Return ONLY the JSON object. Do not include:
-      - Markdown code blocks (\`\`\`json)
-      - Explanatory text before or after
-      - Additional formatting or wrapper elements
-      - Any text outside the JSON structure
-      
-      The response must start with { and end with }`
+        content: `When generating visual content such as diagrams, charts, HTML, or formatted content, use this structured format:
+
+First provide a natural conversational response explaining what you've created.
+
+Then include your artifact using this exact format:
+
+.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_DELIMITER*}=>-.-.-.-.-.-.-.-.
+
+TILES_KIND: [html|markdown|mermaid]
+TILES_TITLE: Brief descriptive title
+TILES_DESCRIPTION: What this artifact does or shows
+TILES_CONTENT_BEGIN
+[your raw content here - no escaping needed]
+TILES_CONTENT_END
+
+.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_END*}=>-.-.-.-.-.-.-.-.
+
+Kind selection rules:
+- html: Interactive content, styled elements, dashboards, games, apps
+- mermaid: Diagrams, flowcharts, mind maps, charts, graphs  
+- markdown: Documentation, notes, plain formatted text, lists
+
+Content guidelines:
+- NO escaping required between TILES_CONTENT_BEGIN/END
+- Raw HTML, Mermaid syntax, or Markdown can be placed directly
+- Always include meaningful TITLE and DESCRIPTION
+- Content can span multiple lines freely
+
+Examples:
+
+For HTML:
+I'll create an interactive dashboard for you.
+
+.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_DELIMITER*}=>-.-.-.-.-.-.-.-.
+
+TILES_KIND: html
+TILES_TITLE: Analytics Dashboard
+TILES_DESCRIPTION: Interactive user metrics with charts and filters
+TILES_CONTENT_BEGIN
+<div style="font-family: Arial; padding: 20px; background: #f5f5f5;">
+  <h1>User Analytics</h1>
+  <div style="display: flex; gap: 20px;">
+    <div style="flex: 1; background: white; padding: 15px; border-radius: 8px;">
+      <h3>Total Users</h3>
+      <p style="font-size: 24px; color: #2196F3;">1,247</p>
+    </div>
+  </div>
+</div>
+TILES_CONTENT_END
+
+.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_END*}=>-.-.-.-.-.-.-.-.
+
+For Mermaid:
+Here's a process flow diagram showing the user journey.
+
+.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_DELIMITER*}=>-.-.-.-.-.-.-.-.
+
+TILES_KIND: mermaid
+TILES_TITLE: User Registration Flow
+TILES_DESCRIPTION: Step-by-step process for new user signup
+TILES_CONTENT_BEGIN
+graph TD
+    A[User Visits Site] --> B{Has Account?}
+    B -->|No| C[Registration Form]
+    B -->|Yes| D[Login Form]
+    C --> E[Validate Data]
+    E --> F[Create Account]
+    F --> G[Send Welcome Email]
+    G --> H[Redirect to Dashboard]
+    D --> I[Authenticate]
+    I --> H
+TILES_CONTENT_END
+
+.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_END*}=>-.-.-.-.-.-.-.-.
+
+IMPORTANT: 
+- Always start with a natural conversational response
+- Use the exact delimiter format shown above
+- No escaping needed in content section
+- Include all three metadata fields (KIND, TITLE, DESCRIPTION)`
       };
 
       // Start the conversation with the initial message
@@ -850,28 +872,53 @@ export default function McpRunnerPlugin(): JSX.Element {
             .join('')
             .trim();
 
-          // console.log('Response text for artifact check:', responseText.substring(0, 100) + '...');
+          console.log('Response text for artifact check:', responseText.substring(0, 200) + '...');
           
-          if (responseText.includes('"type": "artifact"')) {
-            // console.log('Found potential artifact in response');
+          // Check for new TILES format or legacy JSON format
+          if (responseText.includes('TILES_ARTIFACT_DELIMITER') || responseText.includes('"type": "artifact"')) {
+            console.log('Found potential artifact in response');
             
             // Try to extract and parse the artifact
             const artifact = extractArtifactFromText(responseText);
+            console.log('Extracted artifact result:', artifact);
+            
             if (artifact) {
-              // console.log('Successfully extracted artifact:', {
-              //   type: artifact.type,
-              //   contentType: artifact.contentType,
-              //   contentLength: artifact.content.length
-              // });
+              console.log('Successfully extracted artifact:', {
+                type: artifact.type,
+                contentType: artifact.contentType,
+                contentLength: artifact.content.length,
+                metadata: artifact.metadata
+              });
               
-              // Insert the artifact node
-              insertArtifactAfterNode(mcpServerNode, artifact);
-              continue; // Skip to next iteration since this was a pure artifact response
+              // For the new format, we need to handle conversational text + artifact
+              if (responseText.includes('TILES_ARTIFACT_DELIMITER')) {
+                console.log('Processing TILES format artifact');
+                // Extract conversational part (before the delimiter)
+                const conversationalPart = responseText.split('.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_DELIMITER*}=>')[0].trim();
+                if (conversationalPart) {
+                  console.log('Inserting conversational part:', conversationalPart.substring(0, 100));
+                  insertTextAfterNode(mcpServerNode, `Claude: ${conversationalPart}`);
+                }
+                
+                // Insert the artifact node
+                console.log('Inserting artifact node...');
+                insertArtifactAfterNode(mcpServerNode, artifact);
+                continue; // Skip to next iteration since we handled everything
+              } else {
+                // Legacy JSON format - insert artifact only
+                console.log('Processing legacy JSON artifact');
+                insertArtifactAfterNode(mcpServerNode, artifact);
+                continue; // Skip to next iteration since this was a pure artifact response
+              }
+            } else {
+              console.log('Failed to extract artifact from response');
             }
+          } else {
+            console.log('No artifact delimiters found in response');
           }
         } catch (e) {
-          // Not a valid artifact JSON, continue with normal processing
-          // console.warn('Response was not a valid artifact:', e);
+          // Not a valid artifact, continue with normal processing
+          console.warn('Response was not a valid artifact:', e);
         }
 
         // Process each part of the response
@@ -890,8 +937,8 @@ export default function McpRunnerPlugin(): JSX.Element {
 
         // Insert any remaining non-artifact text at the end
         if (claudeNonArtifactResponse) {
-          // Check if the non-artifact text contains an artifact JSON
-          if (claudeNonArtifactResponse.includes('"type": "artifact"')) {
+          // Check if the non-artifact text contains an artifact (new or legacy format)
+          if (claudeNonArtifactResponse.includes('TILES_ARTIFACT_DELIMITER') || claudeNonArtifactResponse.includes('"type": "artifact"')) {
             // Try to extract and parse the artifact
             const artifact = extractArtifactFromText(claudeNonArtifactResponse);
             if (artifact) {
@@ -901,15 +948,27 @@ export default function McpRunnerPlugin(): JSX.Element {
               //   contentLength: artifact.content.length
               // });
               
-              // Insert the artifact node
-              insertArtifactAfterNode(mcpServerNode, artifact);
-              
-              // Remove the artifact JSON from the text to display
-              // This is approximate since we don't know the exact position
-              claudeNonArtifactResponse = claudeNonArtifactResponse.replace(
-                /\{[\s\S]*"type":\s*"artifact"[\s\S]*\}/, 
-                ''
-              );
+              // For the new format, handle conversational text + artifact
+              if (claudeNonArtifactResponse.includes('TILES_ARTIFACT_DELIMITER')) {
+                // Extract conversational part (before the delimiter)
+                const conversationalPart = claudeNonArtifactResponse.split('.-.-.-.-.-.-.-.-<={*TILES_ARTIFACT_DELIMITER*}=>')[0].trim();
+                if (conversationalPart) {
+                  insertTextAfterNode(mcpServerNode, `Claude: ${conversationalPart}`);
+                }
+                
+                // Insert the artifact node
+                insertArtifactAfterNode(mcpServerNode, artifact);
+                claudeNonArtifactResponse = ''; // Clear since we handled everything
+              } else {
+                // Legacy JSON format - insert artifact and remove JSON from text
+                insertArtifactAfterNode(mcpServerNode, artifact);
+                
+                // Remove the artifact JSON from the text to display
+                claudeNonArtifactResponse = claudeNonArtifactResponse.replace(
+                  /\{[\s\S]*"type":\s*"artifact"[\s\S]*\}/, 
+                  ''
+                );
+              }
             }
           }
           
