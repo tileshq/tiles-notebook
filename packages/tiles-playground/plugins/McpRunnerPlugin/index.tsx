@@ -113,7 +113,7 @@ function extractArtifactFromText(text: string): ArtifactStructure | null {
     console.log('Start delimiter index:', startIndex);
     console.log('End delimiter index:', endIndex);
     
-    let artifactMatch = null;
+    let artifactMatch: [string | null, string] | null = null;
     if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
       const contentStart = startIndex + startDelimiter.length;
       const artifactContent = text.substring(contentStart, endIndex).trim();
