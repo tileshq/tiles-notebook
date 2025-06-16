@@ -64,7 +64,7 @@ export function $prepopulatedRichText() {
     // Add a paragraph with text
     const paragraph5 = $createParagraphNode();
     paragraph5.append(
-      $createTextNode('Then, place the cursor on the line above, and click the \`Run Tiles\` button to have the agent process it. '),
+      $createTextNode('Then, select the text including the mention of the MCP server, and click the \`Run Tiles\` button to have the agent process it. '),
       $createTextNode('To share this document, use the airplane icon in the top-right corner.'),
     );
     root.append(paragraph5);

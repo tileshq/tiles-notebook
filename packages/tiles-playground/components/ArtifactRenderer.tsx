@@ -45,6 +45,10 @@ interface ArtifactRendererProps {
   contentType: ArtifactContentType;
   content: string;
   nodeKey: NodeKey;
+  metadata?: {
+    title?: string;
+    description?: string;
+  };
 }
 
 // Initialize Mermaid
@@ -54,7 +58,7 @@ mermaid.initialize({
   // Consider securityLevel: 'strict' or 'sandbox' if needed
 });
 
-const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ contentType, content, nodeKey }) => {
+const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ contentType, content, nodeKey, metadata }) => {
   const [showCode, setShowCode] = useState(false);
   const mermaidRef = useRef<HTMLDivElement>(null);
   const [mermaidRendered, setMermaidRendered] = useState(false);
@@ -95,21 +99,22 @@ const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ contentType, conten
 
     switch (contentType) {
       case 'application/vnd.ant.html':
-        // Fix any issues with the HTML content
-        const fixedContent = fixHTMLContent(content);
+        // For new TILES format, content is already raw/unescaped
+        // For legacy format, we may still need to fix escaped content
+        const processedContent = metadata ? content : fixHTMLContent(content);
         
         // Check if content is valid HTML
-        if (!isValidHTML(fixedContent)) {
+        if (!isValidHTML(processedContent)) {
           return (
             <div className="html-container">
               <p>Invalid HTML content. Showing as code:</p>
-              <pre className="code-block"><code>{fixedContent}</code></pre>
+              <pre className="code-block"><code>{processedContent}</code></pre>
             </div>
           );
         }
         
         // Use DOMPurify to sanitize the HTML
-        const sanitizedHTML = DOMPurify.sanitize(fixedContent, {
+        const sanitizedHTML = DOMPurify.sanitize(processedContent, {
           ADD_TAGS: ['style', 'script'],
           ADD_ATTR: ['onclick', 'onload', 'onerror'],
           FORBID_TAGS: [],
@@ -122,7 +127,7 @@ const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ contentType, conten
             <iframe
               srcDoc={sanitizedHTML}
               sandbox="allow-same-origin allow-scripts"
-              title="HTML Content"
+              title={metadata?.title || "HTML Content"}
             />
           </div>
         );
@@ -143,6 +148,16 @@ const ArtifactRenderer: React.FC<ArtifactRendererProps> = ({ contentType, conten
 
   return (
     <div className="artifact-container">
+      {(metadata?.title || metadata?.description) && (
+        <div className="artifact-header">
+          {metadata?.title && (
+            <h3 className="artifact-title">{metadata.title}</h3>
+          )}
+          {metadata?.description && (
+            <p className="artifact-description">{metadata.description}</p>
+          )}
+        </div>
+      )}
       <button 
         className="toggle-button" 
         onClick={toggleView} 

@@ -28,20 +28,28 @@ export type ArtifactContentType =
 export interface SerializedArtifactNode extends SerializedLexicalNode {
   contentType: ArtifactContentType;
   content: string;
+  metadata?: {
+    title?: string;
+    description?: string;
+  };
   type: 'artifact';
   version: 1;
 }
 
 // Helper function to convert DOM element data attributes to node properties
 function convertArtifactElement(domNode: Node): DOMConversionOutput | null {
-  const node = domNode as HTMLElement;
-  const contentType = node.getAttribute('data-artifact-content-type');
-  const content = node.getAttribute('data-artifact-content');
+  const element = domNode as HTMLElement;
+  const contentType = element.getAttribute('data-artifact-content-type');
+  const content = element.getAttribute('data-artifact-content');
+  const title = element.getAttribute('data-artifact-title');
+  const description = element.getAttribute('data-artifact-description');
 
   if (contentType && content) {
+    const metadata = (title || description) ? { title: title || undefined, description: description || undefined } : undefined;
     const node = $createArtifactNode(
       contentType as ArtifactContentType,
       content,
+      metadata,
     );
     return { node };
   }
@@ -51,19 +59,24 @@ function convertArtifactElement(domNode: Node): DOMConversionOutput | null {
 export class ArtifactNode extends DecoratorNode<JSX.Element> {
   __contentType: ArtifactContentType;
   __content: string;
+  __metadata?: {
+    title?: string;
+    description?: string;
+  };
 
   static getType(): string {
     return 'artifact';
   }
 
   static clone(node: ArtifactNode): ArtifactNode {
-    return new ArtifactNode(node.__contentType, node.__content, node.__key);
+    return new ArtifactNode(node.__contentType, node.__content, node.__metadata, node.__key);
   }
 
   static importJSON(serializedNode: SerializedArtifactNode): ArtifactNode {
     const node = $createArtifactNode(
       serializedNode.contentType,
       serializedNode.content,
+      serializedNode.metadata,
     );
     return node;
   }
@@ -71,17 +84,23 @@ export class ArtifactNode extends DecoratorNode<JSX.Element> {
   constructor(
     contentType: ArtifactContentType,
     content: string,
+    metadata?: {
+      title?: string;
+      description?: string;
+    },
     key?: NodeKey,
   ) {
     super(key);
     this.__contentType = contentType;
     this.__content = content;
+    this.__metadata = metadata;
   }
 
   exportJSON(): SerializedArtifactNode {
     return {
       contentType: this.__contentType,
       content: this.__content,
+      metadata: this.__metadata,
       type: 'artifact',
       version: 1,
     };
@@ -94,6 +113,12 @@ export class ArtifactNode extends DecoratorNode<JSX.Element> {
     // Store data in attributes for potential DOM conversion
     div.setAttribute('data-artifact-content-type', this.__contentType);
     div.setAttribute('data-artifact-content', this.__content);
+    if (this.__metadata?.title) {
+      div.setAttribute('data-artifact-title', this.__metadata.title);
+    }
+    if (this.__metadata?.description) {
+      div.setAttribute('data-artifact-description', this.__metadata.description);
+    }
     return div;
   }
 
@@ -122,12 +147,21 @@ export class ArtifactNode extends DecoratorNode<JSX.Element> {
     const element = document.createElement('div');
     element.setAttribute('data-artifact-content-type', this.__contentType);
     element.setAttribute('data-artifact-content', this.__content);
+    if (this.__metadata?.title) {
+      element.setAttribute('data-artifact-title', this.__metadata.title);
+    }
+    if (this.__metadata?.description) {
+      element.setAttribute('data-artifact-description', this.__metadata.description);
+    }
     // The actual rendering is handled by the decorate method's React component
     return { element };
   }
 
   getTextContent(): string {
     // Provide a textual representation, e.g., for copy/paste or plain text export
+    if (this.__metadata?.title) {
+      return `[Artifact: ${this.__metadata.title}]`;
+    }
     return `[Artifact: ${this.__contentType}]`;
   }
 
@@ -143,7 +177,8 @@ export class ArtifactNode extends DecoratorNode<JSX.Element> {
       React.createElement(ArtifactRenderer, {
         contentType: this.__contentType,
         content: this.__content,
-        nodeKey: this.getKey()
+        nodeKey: this.getKey(),
+        metadata: this.__metadata
       })
     );
   }
@@ -152,8 +187,12 @@ export class ArtifactNode extends DecoratorNode<JSX.Element> {
 export function $createArtifactNode(
   contentType: ArtifactContentType,
   content: string,
+  metadata?: {
+    title?: string;
+    description?: string;
+  },
 ): ArtifactNode {
-  return new ArtifactNode(contentType, content);
+  return new ArtifactNode(contentType, content, metadata);
 }
 
 export function $isArtifactNode(
