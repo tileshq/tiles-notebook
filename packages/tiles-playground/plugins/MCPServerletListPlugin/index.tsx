@@ -169,8 +169,8 @@ function MentionsTypeaheadMenuItem({
 }
 
 // Servlets Container Component
-function ServletsContainer({ servlets, isLoading, error }: { 
-  servlets: any[]; 
+function ServletsContainer({ allServers, isLoading, error }: { 
+  allServers: any[]; 
   isLoading: boolean; 
   error: string | null;
 }): JSX.Element {
@@ -193,26 +193,27 @@ function ServletsContainer({ servlets, isLoading, error }: {
     return text.substring(0, maxLength) + '...';
   };
 
-  // Filter servlets based on search query
-  const filteredServlets = useMemo(() => {
-    if (!searchQuery.trim()) return servlets;
+  // Filter servers based on search query
+  const filteredServers = useMemo(() => {
+    if (!searchQuery.trim()) return allServers;
     
     const query = searchQuery.toLowerCase();
-    return servlets.filter(servlet => 
-      servlet.slug.toLowerCase().includes(query) || 
-      (servlet.name && servlet.name.toLowerCase().includes(query)) ||
-      (servlet.meta?.description && servlet.meta.description.toLowerCase().includes(query))
+    return allServers.filter(server => 
+      server.slug.toLowerCase().includes(query) || 
+      (server.name && server.name.toLowerCase().includes(query)) ||
+      (server.description && server.description.toLowerCase().includes(query)) ||
+      (server.meta?.description && server.meta.description.toLowerCase().includes(query))
     );
-  }, [servlets, searchQuery]);
+  }, [allServers, searchQuery]);
 
   return (
     <div className="servlets-container">
       <div className="servlets-header">
-        <h3>Available Servlets</h3>
+        <h3>Available Servers</h3>
         <div className="search-container">
           <input
             type="text"
-            placeholder="Search servlets..."
+            placeholder="Search servers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
@@ -221,32 +222,41 @@ function ServletsContainer({ servlets, isLoading, error }: {
       </div>
       {isLoading ? (
         <div className="empty-servlets-message">
-          Loading servlets...
+          Loading servers...
         </div>
       ) : error ? (
         <div className="empty-servlets-message">
           Error: {error}
         </div>
-      ) : filteredServlets.length === 0 ? (
+      ) : filteredServers.length === 0 ? (
         <div className="empty-servlets-message">
-          {searchQuery ? 'No servlets match your search' : 'No servlets available'}
+          {searchQuery ? 'No servers match your search' : 'No servers available'}
         </div>
       ) : (
         <ul className="servlets-list">
-          {filteredServlets.map((servlet) => (
+          {filteredServers.map((server) => (
             <li 
-              key={servlet.slug} 
-              className="servlet-item"
-              onClick={() => insertMention(servlet.slug)}
+              key={server.slug} 
+              className={`servlet-item ${server.type} ${server.available ? 'available' : 'unavailable'}`}
+              onClick={() => insertMention(server.slug)}
             >
-              <div className="servlet-name">@{servlet.slug || 'Unnamed Servlet'}</div>
-              {servlet.meta?.description ? (
-                <div className="servlet-description">
-                  {truncateText(servlet.meta.description)}
+              <div className="servlet-header">
+                <div className="servlet-name">
+                  @{server.slug || 'Unnamed Server'}
+                  <span className="server-type-badge">{server.type}</span>
+                  {server.type === 'remote' && (
+                    <span className={`status-indicator ${server.status || 'disconnected'}`}>
+                      {server.status || 'disconnected'}
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <div className="servlet-description">
-                  No description available
+              </div>
+              <div className="servlet-description">
+                {server.description || server.meta?.description || 'No description available'}
+              </div>
+              {server.tools && server.tools.length > 0 && (
+                <div className="tools-count">
+                  {server.tools.length} tools available
                 </div>
               )}
             </li>
@@ -263,7 +273,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
   const [showServlets, setShowServlets] = useState<boolean>(false);
   
   // Use the McpContext instead of managing state locally
-  const { servlets, isLoading, error } = useMcpContext();
+  const { allServers, isLoading, error } = useMcpContext();
 
   const checkForMentionMatch = useBasicTypeaheadTriggerMatch('@', {
     minLength: 0, // Trigger immediately after '@'
@@ -276,19 +286,20 @@ export default function NewMentionsPlugin(): JSX.Element | null {
     if (queryString === null || isLoading || error) {
       return [];
     }
-    if (!Array.isArray(servlets)) {
+    if (!Array.isArray(allServers)) {
       return [];
     }
     const query = queryString.toLowerCase();
-    return servlets
-      .filter((servlet) =>
-        servlet.slug.toLowerCase().includes(query) ||
-        (servlet.name && servlet.name.toLowerCase().includes(query)) ||
-        (servlet.meta?.description && servlet.meta.description.toLowerCase().includes(query))
+    return allServers
+      .filter((server) =>
+        server.slug.toLowerCase().includes(query) ||
+        (server.name && server.name.toLowerCase().includes(query)) ||
+        (server.description && server.description.toLowerCase().includes(query)) ||
+        (server.meta?.description && server.meta.description.toLowerCase().includes(query))
       )
-      .map((servlet) => new MentionTypeaheadOption(servlet.slug)) // Use slug as the primary identifier/display
+      .map((server) => new MentionTypeaheadOption(server.slug)) // Use slug as the primary identifier/display
       .slice(0, SUGGESTION_LIST_LENGTH_LIMIT); // Limit results
-  }, [servlets, queryString, isLoading, error]);
+  }, [allServers, queryString, isLoading, error]);
 
   const onSelectOption = useCallback(
     (
@@ -318,7 +329,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
   const loadingOrErrorOption = useMemo(() => {
     if (isLoading) {
       // Create a simple text option for loading state
-      return [new MentionTypeaheadOption('Loading servlets...')];
+      return [new MentionTypeaheadOption('Loading servers...')];
     }
     if (error) {
       // Create a simple text option for error state
@@ -407,7 +418,7 @@ export default function NewMentionsPlugin(): JSX.Element | null {
       />
       {showServlets && (
         <ServletsContainer 
-          servlets={servlets} 
+          allServers={allServers} 
           isLoading={isLoading} 
           error={error} 
         />

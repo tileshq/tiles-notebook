@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_EDITOR, LexicalCommand, $createTextNode, $createParagraphNode, TextNode, $insertNodes, LexicalNode } from 'lexical';
 import { $createHorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode';
 import { useMcpContext } from '@/contexts/McpContext';
+import { REMOTE_MCP_SERVERS } from '../../lib/mcp-client-manager';
 import { CSSProperties } from 'react';
 import { createWasmExecutorFromBuffer, WasmExecutorResult, WasmExecutorOptions, WasmExecutor } from '../../lib/wasm-executor';
 import { $createArtifactNode, $isArtifactNode, ArtifactContentType } from '../../nodes/ArtifactNode';
@@ -254,11 +255,28 @@ function ConfigPanel({
   runOnServer: boolean;
   onRunOnServerChange: (runOnServer: boolean) => void;
 }): JSX.Element {
+  const { 
+    remoteServers, 
+    connectionStates, 
+    connectToServer, 
+    disconnectFromServer,
+    addRemoteServer,
+    removeRemoteServer,
+    updateServerEnabled
+  } = useMcpContext();
+  
+  // Local configuration state
   const [keyValuePairs, setKeyValuePairs] = useState<Array<{key: string; value: string}>>(
     Object.entries(config).length > 0 
       ? Object.entries(config).map(([key, value]) => ({ key, value }))
       : [{ key: '', value: '' }]
   );
+  
+  // Remote server management state
+  const [activeTab, setActiveTab] = useState<'local' | 'remote'>('local');
+  const [newServerName, setNewServerName] = useState('');
+  const [newServerUrl, setNewServerUrl] = useState('');
+  const [isConnecting, setIsConnecting] = useState<Set<string>>(new Set());
 
   // Log initial config
   useEffect(() => {
@@ -321,10 +339,72 @@ function ConfigPanel({
     console.log('Current keyValuePairs:', keyValuePairs);
   }, [keyValuePairs]);
 
+  // Remote server management functions
+  const handleToggleServer = async (serverId: string, enabled: boolean) => {
+    try {
+      // First update the server's enabled state in the context
+      updateServerEnabled(serverId, enabled);
+
+      if (enabled) {
+        setIsConnecting(prev => new Set(prev).add(serverId));
+        await connectToServer(serverId);
+      } else {
+        await disconnectFromServer(serverId);
+      }
+    } catch (error) {
+      console.error(`Failed to ${enabled ? 'connect to' : 'disconnect from'} server ${serverId}:`, error);
+      // Revert the enabled state on error
+      updateServerEnabled(serverId, !enabled);
+    } finally {
+      setIsConnecting(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(serverId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleAddCustomServer = () => {
+    if (!newServerName.trim() || !newServerUrl.trim()) {
+      return;
+    }
+
+    const serverId = newServerName.toLowerCase().replace(/\s+/g, '-');
+    addRemoteServer({
+      id: serverId,
+      name: newServerName.trim(),
+      url: newServerUrl.trim(),
+      requiresAuth: true,
+      enabled: false,
+      category: 'data',
+      description: 'Custom MCP server'
+    });
+
+    setNewServerName('');
+    setNewServerUrl('');
+  };
+
+  const getConnectionStatus = (serverId: string) => {
+    const connectionState = connectionStates.get(serverId);
+    if (isConnecting.has(serverId)) return 'connecting';
+    return connectionState?.status || 'disconnected';
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'connected': return '🟢';
+      case 'connecting': return '🟡';
+      case 'error': return '🔴';
+      case 'auth-required': return '🔐';
+      default: return '⚪';
+    }
+  };
+
+
   return (
     <div className="config-panel">
       <div className="config-panel-header">
-        <h3>Key configuration</h3>
+        <h3>Configuration</h3>
         <button
           className="close-button"
           onClick={onClose}
@@ -332,48 +412,236 @@ function ConfigPanel({
           ×
         </button>
       </div>
+      
+      {/* Tab Navigation */}
+      <div className="config-tabs">
+        <button 
+          className={`config-tab ${activeTab === 'local' ? 'active' : ''}`}
+          onClick={() => setActiveTab('local')}
+        >
+          Portable Local MCPs
+        </button>
+        <button 
+          className={`config-tab ${activeTab === 'remote' ? 'active' : ''}`}
+          onClick={() => setActiveTab('remote')}
+        >
+          Remote MCPs
+        </button>
+      </div>
+
       <div className="config-panel-content">
-        <div className="config-option">
-          <label>
-            <input
-              type="checkbox"
-              checked={runOnServer}
-              onChange={(e) => {
-                console.log('Server execution toggle changed to:', e.target.checked);
-                onRunOnServerChange(e.target.checked);
-              }}
-            />
-            Run on server (avoids CORS issues)
-          </label>
-        </div>
-        <p>Add key-value pairs for your configuration.</p>
-        {keyValuePairs.map((pair, index) => (
-          <div key={index} className="config-pair">
-            <input
-              type="text"
-              placeholder="Key"
-              value={pair.key.replace(/^"|"$/g, '')} // Remove quotes for display
-              onChange={(e) => handlePairChange(index, 'key', e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Value"
-              value={pair.value.replace(/^"|"$/g, '')} // Remove quotes for display
-              onChange={(e) => handlePairChange(index, 'value', e.target.value)}
-            />
+        {activeTab === 'local' && (
+          <div className="local-config">
+            <div className="config-option">
+              <div className="execution-toggle">
+                <div className="toggle-header">
+                  <div className="toggle-info">
+                    <span className="toggle-label">Execution Location</span>
+                    <span className="toggle-description">
+                      Choose where WASM servers run: browser (direct) or server (avoids CORS issues)
+                    </span>
+                  </div>
+                  <div className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="execution-toggle"
+                      checked={runOnServer}
+                      onChange={(e) => {
+                        console.log('Server execution toggle changed to:', e.target.checked);
+                        onRunOnServerChange(e.target.checked);
+                      }}
+                    />
+                    <label htmlFor="execution-toggle" className="toggle-slider">
+                      <span className="toggle-option left">Browser</span>
+                      <span className="toggle-option right">Server</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p>Add key-value pairs for your configuration.</p>
+            {keyValuePairs.map((pair, index) => (
+              <div key={index} className="config-pair">
+                <input
+                  type="text"
+                  placeholder="Key"
+                  value={pair.key.replace(/^"|"$/g, '')} // Remove quotes for display
+                  onChange={(e) => handlePairChange(index, 'key', e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Value"
+                  value={pair.value.replace(/^"|"$/g, '')} // Remove quotes for display
+                  onChange={(e) => handlePairChange(index, 'value', e.target.value)}
+                />
+                <button
+                  className="remove-pair"
+                  onClick={() => handleRemovePair(index)}
+                  aria-label="Remove pair">
+                  ×
+                </button>
+              </div>
+            ))}
             <button
-              className="remove-pair"
-              onClick={() => handleRemovePair(index)}
-              aria-label="Remove pair">
-              ×
+              className="add-pair"
+              onClick={handleAddPair}>
+              + Add Pair
             </button>
           </div>
-        ))}
-        <button
-          className="add-pair"
-          onClick={handleAddPair}>
-          + Add Pair
-        </button>
+        )}
+
+        {activeTab === 'remote' && (
+          <div className="remote-config">
+            <h4>Remote MCPs</h4>
+            {remoteServers.filter(server => REMOTE_MCP_SERVERS.some(predefined => predefined.id === server.id)).map(server => {
+              const status = getConnectionStatus(server.id);
+              const connectionState = connectionStates.get(server.id);
+              const tools = connectionState?.tools || [];
+              
+              return (
+                <div key={server.id} className="server-item" data-status={status}>
+                  <div className="server-info">
+                    <span className="server-icon">{server.icon || '🌐'}</span>
+                    <div className="server-details">
+                      <span className="server-name">{server.name}</span>
+                      <span className="server-url">{server.url}</span>
+                      <span className="server-description">{server.description}</span>
+                    </div>
+                    <div className="server-status">
+                      <span className="status-icon">{getStatusIcon(status)}</span>
+                      <span className="status-text">{status}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="server-tools">
+                    {status === 'connected' && tools.length > 0 ? (
+                      <div className="tools-list">
+                        <span className="tools-label">Tools ({tools.length}):</span>
+                        <div className="tools-grid">
+                          {tools.map((tool, index) => (
+                            <span key={index} className="tool-tag" title={tool.description}>
+                              {tool.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : status === 'connected' && tools.length === 0 ? (
+                      <div className="tools-placeholder">
+                        <span className="tools-label">No tools available</span>
+                      </div>
+                    ) : (
+                      <div className="tools-placeholder">
+                        <span className="tools-label">Connect to see tools/capabilities</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="server-actions">
+                    <label className="server-toggle">
+                      <input
+                        type="checkbox"
+                        checked={server.enabled}
+                        disabled={isConnecting.has(server.id)}
+                        onChange={(e) => handleToggleServer(server.id, e.target.checked)}
+                      />
+                      {isConnecting.has(server.id) ? 'Connecting...' : (server.enabled ? 'Enabled' : 'Disabled')}
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+
+            <h4>Add Custom Server</h4>
+            <div className="custom-server-form">
+              <input
+                type="text"
+                placeholder="Server Name"
+                value={newServerName}
+                onChange={(e) => setNewServerName(e.target.value)}
+              />
+              <input
+                type="url"
+                placeholder="Server URL (e.g., https://api.example.com/mcp)"
+                value={newServerUrl}
+                onChange={(e) => setNewServerUrl(e.target.value)}
+              />
+              <button
+                onClick={handleAddCustomServer}
+                disabled={!newServerName.trim() || !newServerUrl.trim()}
+              >
+                + Add Server
+              </button>
+            </div>
+
+            {remoteServers.filter(server => !REMOTE_MCP_SERVERS.some(predefined => predefined.id === server.id)).length > 0 && (
+              <>
+                <h4>Custom Servers</h4>
+                {remoteServers.filter(server => !REMOTE_MCP_SERVERS.some(predefined => predefined.id === server.id)).map(server => {
+                  const status = getConnectionStatus(server.id);
+                  const connectionState = connectionStates.get(server.id);
+                  const tools = connectionState?.tools || [];
+                  
+                  return (
+                    <div key={server.id} className="server-item custom-server" data-status={status}>
+                      <div className="server-info">
+                        <div className="server-details">
+                          <span className="server-name">{server.name}</span>
+                          <span className="server-url">{server.url}</span>
+                        </div>
+                        <div className="server-status">
+                          <span className="status-icon">{getStatusIcon(status)}</span>
+                          <span className="status-text">{status}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="server-tools">
+                        {status === 'connected' && tools.length > 0 ? (
+                          <div className="tools-list">
+                            <span className="tools-label">Tools ({tools.length}):</span>
+                            <div className="tools-grid">
+                              {tools.map((tool, index) => (
+                                <span key={index} className="tool-tag" title={tool.description}>
+                                  {tool.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : status === 'connected' && tools.length === 0 ? (
+                          <div className="tools-placeholder">
+                            <span className="tools-label">No tools available</span>
+                          </div>
+                        ) : (
+                          <div className="tools-placeholder">
+                            <span className="tools-label">Connect to see tools/capabilities</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="server-actions">
+                        <label className="server-toggle">
+                          <input
+                            type="checkbox"
+                            checked={server.enabled}
+                            disabled={isConnecting.has(server.id)}
+                            onChange={(e) => handleToggleServer(server.id, e.target.checked)}
+                          />
+                          {isConnecting.has(server.id) ? 'Connecting...' : (server.enabled ? 'Connected' : 'Connect')}
+                        </label>
+                        <button
+                          className="remove-server"
+                          onClick={() => removeRemoteServer(server.id)}
+                          aria-label="Remove server"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -381,7 +649,7 @@ function ConfigPanel({
 
 export default function McpRunnerPlugin(): JSX.Element {
   const [editor] = useLexicalComposerContext();
-  const { servlets, refreshServlets, isLoading, error, fetchWasmContent } = useMcpContext();
+  const { servlets, refreshServlets, isLoading, error, fetchWasmContent, allServers, findServerBySlug } = useMcpContext();
   const [wasmContent, setWasmContent] = useState<ArrayBuffer | null>(null);
   const [wasmError, setWasmError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -429,11 +697,20 @@ export default function McpRunnerPlugin(): JSX.Element {
   // Create a ref to store the latest servlets data
   const servletsRef = useRef(servlets);
   
+  // Create a ref to store the latest all servers data
+  const allServersRef = useRef(allServers);
+  
   // Update the ref whenever servlets changes
   useEffect(() => {
     servletsRef.current = servlets;
     //console.log('Servlets updated in ref:', servlets);
   }, [servlets]);
+  
+  // Update the ref whenever allServers changes
+  useEffect(() => {
+    allServersRef.current = allServers;
+    //console.log('All servers updated in ref:', allServers);
+  }, [allServers]);
 
   // Insert text nodes after the current node
   const insertTextAfterNode = (targetNode: TextNode, text: string) => {
@@ -477,6 +754,66 @@ export default function McpRunnerPlugin(): JSX.Element {
       });
   };
   // --- End Insert Artifact Node ---
+
+  // Function to execute remote MCP tool
+  const executeRemoteMcpTool = async (
+    serverId: string,
+    toolName: string,
+    args: Record<string, any>
+  ) => {
+    try {
+      // Find the server config to pass to backend for auto-connection
+      const serverConfig = allServersRef.current.find(s => s.serverId === serverId);
+      
+      const response = await fetch('/api/mcp-execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'remote-mcp',
+          serverId,
+          serverConfig: serverConfig ? {
+            id: serverConfig.serverId,
+            name: serverConfig.name,
+            url: serverConfig.serverUrl,
+            requiresAuth: serverConfig.requiresAuth,
+            enabled: true,
+            category: 'data',
+            description: serverConfig.description
+          } : undefined,
+          toolName,
+          args
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || 'Failed to execute remote MCP tool');
+        } catch (parseError) {
+          throw new Error(`Failed to execute remote MCP tool: ${errorText}`);
+        }
+      }
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      return {
+        output: result.output,
+        error: undefined
+      };
+    } catch (error) {
+      console.error('Error executing remote MCP tool:', error);
+      return {
+        output: '',
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  };
 
   // Function to execute WASM on server
   const executeWasmOnServer = async (
@@ -658,15 +995,21 @@ export default function McpRunnerPlugin(): JSX.Element {
     //  userPrompt: finalPrompt
     //});
 
-    // Use the ref to access the latest servlets data
-    const currentServlets = servletsRef.current;
+    // Use the ref to access the latest unified servers data
+    const currentServers = allServersRef.current;
     
-    // Find the servlet matching the node's text content (assuming it's the slug)
-    const servletSlug = mcpServerNode.getTextContent();
-    const matchingServlet = currentServlets.find((servlet) => servlet.slug === servletSlug);
+    // Find the server matching the node's text content (assuming it's the slug)
+    const serverSlug = mcpServerNode.getTextContent();
+    const matchingServer = currentServers.find((server) => server.slug === serverSlug);
 
-    if (!matchingServlet) {
-      setWasmError(`Servlet with slug "${servletSlug}" not found`);
+    if (!matchingServer) {
+      setWasmError(`Server with slug "${serverSlug}" not found`);
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!matchingServer.available) {
+      setWasmError(`Server "${serverSlug}" is not available (status: ${matchingServer.status || 'unknown'})`);
       setIsProcessing(false);
       return;
     }
@@ -676,25 +1019,32 @@ export default function McpRunnerPlugin(): JSX.Element {
     console.log('Config being used for WASM executor:', wasmExecutorOptions.config);
 
     
-    // Get content address from either meta.lastContentAddress or binding.contentAddress
-    const contentAddress = matchingServlet.meta?.lastContentAddress || 
-                          matchingServlet.binding?.contentAddress;
-    
-    if (!contentAddress) {
-      setWasmError('No content address found for servlet');
-      setIsProcessing(false);
-      return;
+    // Handle different server types
+    let contentAddress: string | null = null;
+    if (matchingServer.type === 'local') {
+      // Get content address from either meta.lastContentAddress or binding.contentAddress for local servers
+      contentAddress = matchingServer.meta?.lastContentAddress || 
+                      matchingServer.binding?.contentAddress || null;
+      
+      if (!contentAddress) {
+        setWasmError('No content address found for local server');
+        setIsProcessing(false);
+        return;
+      }
     }
+    // For remote servers, contentAddress is not needed
     
     // Insert initial message to show processing
-    insertTextAfterNode(mcpServerNode, `Processing request: "${finalPrompt}"... (${runOnServerRef.current ? 'Server' : 'Local'} Execution)`);
+    const executionMode = matchingServer.type === 'remote' ? 'Remote MCP' : 
+                         (runOnServerRef.current ? 'Server' : 'Local');
+    insertTextAfterNode(mcpServerNode, `Processing request: "${finalPrompt}"... (${executionMode} Execution)`);
     
     try {
-      // Only fetch WASM content and create executor if running locally
+      // Only fetch WASM content and create executor for local servers running locally
       let executor: WasmExecutor | null = null;
-      if (!runOnServerRef.current) {
+      if (matchingServer.type === 'local' && !runOnServerRef.current) {
         // Fetch WASM content
-        const wasmBuffer = await fetchWasmContent(contentAddress);
+        const wasmBuffer = await fetchWasmContent(contentAddress!);
         setWasmContent(wasmBuffer);
         
         // Create the WASM executor with current options
@@ -706,11 +1056,17 @@ export default function McpRunnerPlugin(): JSX.Element {
       }
       
       
-          // Extract all available tools from the servlet schema
-    const availableTools = matchingServlet.meta?.schema?.tools || [];
+          // Extract all available tools based on server type
+    let availableTools: any[] = [];
+    
+    if (matchingServer.type === 'local') {
+      availableTools = matchingServer.meta?.schema?.tools || [];
+    } else if (matchingServer.type === 'remote') {
+      availableTools = matchingServer.tools || [];
+    }
     
     if (availableTools.length === 0) {
-      setWasmError(`No tools found in servlet "${servletSlug}"`);
+      setWasmError(`No tools found in ${matchingServer.type} server "${serverSlug}"`);
       setIsProcessing(false);
       return;
     }
@@ -995,38 +1351,50 @@ IMPORTANT:
             // Display tool call
             insertTextAfterNode(mcpServerNode, `Tool call: ${name}\nInput: ${JSON.stringify(input, null, 2)}`);
             
-            // Prepare the input for the servlet
-            const servletInput = JSON.stringify({
-              params: {
-                name: name,
-                arguments: input
-              }
-            });
-            
-            //console.log(`Executing tool ${name} with input:`, servletInput);
-            
-            // Execute the servlet using either server or local execution
-            const useServerExecution = runOnServerRef.current;
-            console.log('Tool execution mode:', useServerExecution ? 'Server' : 'Local');
+            // Execute based on server type
             let executionResult;
-            if (useServerExecution) {
-              // Execute on server
-              console.log('Executing on server with contentAddress:', contentAddress);
-              insertTextAfterNode(mcpServerNode, `🌐 Executing ${name} on server...`);
-              executionResult = await executeWasmOnServer(
-                contentAddress,
-                'call',
-                servletInput,
-                configRef.current
+            
+            if (matchingServer.type === 'remote') {
+              // Execute remote MCP tool
+              console.log('Executing remote MCP tool:', name);
+              insertTextAfterNode(mcpServerNode, `🌐 Executing ${name} on remote MCP server...`);
+              executionResult = await executeRemoteMcpTool(
+                matchingServer.serverId!,
+                name,
+                input
               );
             } else {
-              // Execute locally using the plugin
-              console.log('Executing locally');
-              insertTextAfterNode(mcpServerNode, `💻 Executing ${name} locally...`);
-              if (!executor) {
-                throw new Error('Local executor not initialized');
+              // Local server execution (WASM)
+              // Prepare the input for the servlet
+              const servletInput = JSON.stringify({
+                params: {
+                  name: name,
+                  arguments: input
+                }
+              });
+              
+              const useServerExecution = runOnServerRef.current;
+              console.log('Tool execution mode:', useServerExecution ? 'Server' : 'Local');
+              
+              if (useServerExecution) {
+                // Execute local WASM on server
+                console.log('Executing on server with contentAddress:', contentAddress);
+                insertTextAfterNode(mcpServerNode, `🌐 Executing ${name} on server...`);
+                executionResult = await executeWasmOnServer(
+                  contentAddress!,
+                  'call',
+                  servletInput,
+                  configRef.current
+                );
+              } else {
+                // Execute locally using the plugin
+                console.log('Executing locally');
+                insertTextAfterNode(mcpServerNode, `💻 Executing ${name} locally...`);
+                if (!executor) {
+                  throw new Error('Local executor not initialized');
+                }
+                executionResult = await executor.execute('call', servletInput);
               }
-              executionResult = await executor.execute('call', servletInput);
             }
             setExecutionResult(executionResult);
             
