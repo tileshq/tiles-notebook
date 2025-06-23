@@ -218,7 +218,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
           padding: '20px',
           textAlign: 'center',
         }}>
-        <p>Tiles is a notebook interface that makes working with AI agents easier.</p>
+        <p>Tiles is a notebook that makes working with AI agents easier.</p>
         <p>It&apos;s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.</p>
         <p>
           Check out{' '}
@@ -229,7 +229,7 @@ function SharedEditorContent({ documentId, initialContent }: SharedEditorProps) 
             style={{color: '#007bff', textDecoration: 'none'}}>
             Tilekit
           </a>{' '}
-          for the underlying personal software toolkit.
+          for the personal software toolkit.
         </p>
       </footer>
     </>

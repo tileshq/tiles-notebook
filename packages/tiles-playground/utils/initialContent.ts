@@ -20,7 +20,7 @@ export function $prepopulatedRichText() {
     // Add first paragraph
     const paragraph1 = $createParagraphNode();
     paragraph1.append(
-      $createTextNode('Tiles is a notebook interface that makes working with AI agents easier. It\'s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.')
+      $createTextNode('Tiles is a notebook that makes working with AI agents easier. It\'s a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.')
     );
     root.append(paragraph1);
 

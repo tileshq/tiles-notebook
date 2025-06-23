@@ -1,6 +1,6 @@
 # Tiles Notebook
 
-Tiles is a notebook interface that makes working with AI agents easier. It's a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets. Our vision is to make personal software ubiquitous in the future.
+Tiles is a notebook that makes working with AI agents easier. It's a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets. Our vision is to make personal software ubiquitous in the future.
 
 ## Project Structure
 
