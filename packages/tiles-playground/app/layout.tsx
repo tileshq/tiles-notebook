@@ -5,7 +5,7 @@ import { McpProvider } from '../contexts/McpContext';
 
 export const metadata: Metadata = {
   title: 'Tiles Notebook | Note Taking Tool With AI Agents',
-  description: "It's a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.",
+  description: 'A notebook interface that makes working with AI agents easier.',
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Tiles Notebook | Note Taking Tool With AI Agents',
-    description: "It's a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets.",    
+    description: 'A notebook interface that makes working with AI agents easier.',    
     images: [
       {
         url: '/api/og', // This should point to your OpenGraph route
