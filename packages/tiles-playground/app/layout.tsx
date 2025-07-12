@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { McpProvider } from '../contexts/McpContext';
+import Banner from '@/components/Banner';
 
 export const metadata: Metadata = {
   title: 'Tiles Notebook | Note Taking Tool With AI Agents',
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <Banner />
         <McpProvider>
           {children}
           <Analytics />

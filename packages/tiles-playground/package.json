@@ -24,6 +24,7 @@
     "@lexical/selection": "0.22.0",
     "@lexical/table": "0.22.0",
     "@lexical/utils": "0.22.0",
+    "@next/swc-darwin-arm64": "^14.2.28",
     "@types/dompurify": "^3.2.0",
     "@vercel/analytics": "^1.1.2",
     "@vercel/og": "^0.6.8",
