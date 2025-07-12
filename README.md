@@ -1,5 +1,7 @@
 # Tiles Notebook
 
+> Update: Since the release of this alpha, work on the notebook has been paused. The notebook has been moved to [notebook.tiles.run](https://notebook.tiles.run) for the time being.
+
 Tiles is a notebook that makes working with AI agents easier. It's a multiplayer, offline-first experience built on MCP, featuring AI-generated widgets. Our vision is to make personal software ubiquitous in the future.
 
 ## Project Structure

@@ -17,7 +17,7 @@ export default function Banner() {
         href="https://ankeshbharti.com/stories/announcing-tiles-notebook-alpha"
         target="_blank"
         rel="noopener noreferrer"
-        style={{ color: '#F00', textDecoration: 'underline', fontWeight: 500 }}
+        style={{ color: '#027BFF', textDecoration: 'underline', fontWeight: 500 }}
       >
         Learn more
       </Link>
